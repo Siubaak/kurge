@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Keactive</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../dist/index.js"></script>
+  <script>
+    let data = Keactive.useData([])
+    let id = 0
+
+    function list(props) {
+      return Keactive.createElement('ul', {}, props.array.map((i) => Keactive.createElement('li', { key: i }, i)))
+    }
+
+    function app() {
+      function handleAdd() {
+        data.push(++id)
+      }
+      function handleDel() {
+        if (data.pop()) --id
+      }
+      function handleBottomToTop() {
+        data.unshift(data.pop())
+      }
+      return Keactive.createElement('div', {},
+        Keactive.createElement('button', { onClick: handleAdd }, 'add'),
+        Keactive.createElement('button', { onClick: handleDel }, 'del'),
+        Keactive.createElement('button', { onClick: handleBottomToTop }, 'bottom to top'),
+        Keactive.createElement(list, { array: data })
+      )
+    }
+
+    Keactive.render(app, document.getElementById('app'))
+  </script>
+</body>
+</html>

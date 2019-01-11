@@ -1,3 +1,6 @@
+# Dist
+dist
+
 # Logs
 logs
 *.log
@@ -38,6 +41,9 @@ jspm_packages/
 
 # TypeScript v1 declaration files
 typings/
+
+# rollup-plugin-typescript2 cache
+.rpt2_cache
 
 # Optional npm cache directory
 .npm
