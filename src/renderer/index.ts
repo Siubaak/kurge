@@ -30,10 +30,10 @@ export function instantiate(element: Elem) {
 // render markup and mount
 export default function render(vdom: VDomNode, container: HTMLElement) {
   if (!is.object(vdom)) {
-    throw new TypeError('Please offer a legal VDOM node')
+    throw new Error('please offer a legal VDOM node')
   }
   if (!container) {
-    throw new TypeError('A root DOM node is needed to mount the app')
+    throw new Error('a root DOM node is needed to mount the app')
   }
   let instance: Instance = null
   if (is.string(vdom.type)) {
@@ -41,6 +41,6 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   } else {
     instance = instantiate(vdom)
   }
-  const markup: string = instance.mount('k')
+  const markup: string = instance.mount('kt')
   container.innerHTML = markup
 }

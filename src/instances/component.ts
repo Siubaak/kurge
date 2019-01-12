@@ -7,16 +7,21 @@ import { VDomNode, Elem, Component, Instance } from '../common/types'
 import Watcher from '../observer/watcher'
 import { pushTarget, popTarget } from '../observer/dependeny'
 
+import { context } from '../hooks/context'
+
 // custom function component instance class
 export default class ComponentInstance implements Instance {
   id: string
   index: number
+  state: any
+  watcher: Watcher = new Watcher(this)
   private element: VDomNode
   private component: Component
   private renderedInstance: Instance
 
   constructor(element: Elem) {
     this.element = element as VDomNode
+    this.component = ((this.element as VDomNode).type as Component)
   }
 
   get key(): string {
@@ -30,42 +35,35 @@ export default class ComponentInstance implements Instance {
     return getNode(this.id)
   }
 
-  mount(id: string, context?: any): string {
-    this.id = id
-    
-    this.component = ((this.element as VDomNode).type as Component)
-
-    const watcher: Watcher = new Watcher(this)
-
-    pushTarget(watcher)
-    const renderedElement: VDomNode = this.component(this.element.props, context)
-    this.renderedInstance = instantiate(renderedElement)
+  render(props: any) {
+    pushTarget(this.watcher)
+    const element: VDomNode = this.component(props, context.store)
     popTarget()
-    watcher.cleanUp()
-
-    const markup = this.renderedInstance.mount(id)
-
-    return markup
+    this.watcher.clean()
+    return element
+  }
+  mount(id: string): string {
+    this.renderedInstance = instantiate(this.render(this.element.props))
+    this.id = id
+    return this.renderedInstance.mount(id)
   }
   same(nextElement: Elem): boolean {
     return is.object(nextElement)
       && (nextElement as VDomNode).type === this.element.type
       && (nextElement as VDomNode).key === this.element.key
   }
-  update(nextElement: Elem, context?: any): void {
-    nextElement = nextElement == null
-      ? this.element
-      : (nextElement as VDomNode)
-
-    const nextRenderedElement: VDomNode = this.component(nextElement.props, context)
-    reconciler.enqueueUpdate(this.renderedInstance, nextRenderedElement)
-
+  update(nextElement: Elem): void {
+    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+    reconciler.enqueueUpdate(this.renderedInstance, this.render(nextElement.props))
     this.element = nextElement
   }
   unmount() {
     this.renderedInstance.unmount()
+    this.watcher.clean()
     delete this.id
     delete this.index
+    delete this.state
+    delete this.watcher
     delete this.element
     delete this.component
     delete this.renderedInstance

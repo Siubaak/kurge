@@ -11,7 +11,7 @@ export interface Instance {
   
   mount: (id: string) => string
   same: (nextElement: Elem) => boolean
-  update: (nextElement: Elem, context?: any) => void
+  update: (nextElement: Elem) => void
   unmount: () => void
 }
 

@@ -9,10 +9,7 @@ import reconciler from './reconciler'
 export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
   // create map by key or index, to make sure O(1) retrieve 
   const prevInstanceMap: { [key: string]: Instance } = {}
-  prevInstances.forEach((inst: Instance) =>
-    // ignore even if duplicate keys
-    prevInstanceMap[inst.key] = inst
-  )
+  prevInstances.forEach((inst: Instance) => prevInstanceMap[inst.key] = inst)
   // save instances corresponding to nextChildren
   const nextInstances: Instance[] = []
   // traversal nextChildren
@@ -51,7 +48,7 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
         forwardOps.push({
           type: 'move',
           inst: forwardPrevInstance,
-          index: lastForwardIndex,
+          index: lastForwardIndex
         })
       }
       // update fixed point
@@ -61,13 +58,13 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
       if (forwardPrevInstance) {
         forwardOps.push({
           type: 'remove',
-          inst: forwardPrevInstance,
+          inst: forwardPrevInstance
         })
       }
       forwardOps.push({
         type: 'insert',
         inst: forwardNextInstance,
-        index: lastForwardIndex,
+        index: lastForwardIndex
       })
     }
     // backward diff
@@ -79,7 +76,7 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
         backwardOps.push({
           type: 'move',
           inst: backwardPrevInstance,
-          index: lastBackwardIndex,
+          index: lastBackwardIndex
         })
       }
       lastBackwardIndex = Math.min(backwardPrevInstance.index, lastBackwardIndex)
@@ -87,41 +84,43 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
       if (backwardPrevInstance) {
         backwardOps.push({
           type: 'remove',
-          inst: backwardPrevInstance,
+          inst: backwardPrevInstance
         })
       }
       backwardOps.push({
         type: 'insert',
         inst: backwardNextInstance,
-        index: lastBackwardIndex,
+        index: lastBackwardIndex
       })
     }
   }
   // 同样构造map，以保证O(1)查询
   // create map to make sure O(1) retrieve
   const nextInstanceMap: { [key: string]: Instance } = {}
-  nextInstances.forEach((inst: Instance) =>
-    // ignore even if duplicate keys
+  nextInstances.forEach((inst: Instance) => {
+    if (nextInstanceMap[inst.key]) {
+      // duplicate keys
+      console.warn('Find duplicate keys in a list. '
+        + 'Please offer unique keys for list items '
+        + 'or rendering this list may meet some error')
+    }
     nextInstanceMap[inst.key] = inst
-  )
+  })
   // remove unnecessary nodes in prevInstances
   for (const key in prevInstanceMap) {
     if (!nextInstanceMap[key]) {
       forwardOps.push({
         type: 'remove',
-        inst: prevInstanceMap[key],
+        inst: prevInstanceMap[key]
       })
       backwardOps.push({
         type: 'remove',
-        inst: prevInstanceMap[key],
+        inst: prevInstanceMap[key]
       })
     }
   }
   // update index
-  nextInstances.forEach(
-    (nextInstance: Instance, index: number) =>
-      nextInstance.index = index
-  )
+  nextInstances.forEach((nextInstance: Instance, index: number) => nextInstance.index = index)
   // update childInstances, and assign length to be zero to avoid lossing ref
   prevInstances.length = 0
   prevInstances.push(...nextInstances)

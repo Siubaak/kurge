@@ -3,7 +3,7 @@ import Dependency from './dependeny'
 
 export default function observe(data: any) {
   if (!is.object(data) && !is.array(data)) {
-    throw new TypeError('Data must be object or array')
+    throw new Error('observed data must be object or array')
   }
   const dep: Dependency = new Dependency()
   return new Proxy(data, {

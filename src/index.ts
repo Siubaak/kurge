@@ -1,11 +1,14 @@
-import useData from './hooks/data'
 import render from './renderer/index'
 import createElement from './vdom/create'
+
+import useState from './hooks/state'
+import useContext from './hooks/context'
 
 const Keactive = {
   render,
   createElement,
-  useData
+  useState,
+  useContext
 }
 
 try {

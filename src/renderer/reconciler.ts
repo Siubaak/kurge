@@ -29,7 +29,7 @@ class DirtyInstanceSet {
 
 // reconciler for async update, and avoid multiple updates of the same instance
 // mount and unmount is sync, and only update is async
-export class Reconciler {
+class Reconciler {
   private readonly dirtyInstanceSet = new DirtyInstanceSet() 
   private isBatchUpdating: boolean = false
 

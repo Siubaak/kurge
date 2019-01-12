@@ -1,19 +1,19 @@
 import Dependency from './dependeny'
-import { Instance } from '../common/types'
 import { swap } from '../utils/index'
 import reconciler from '../renderer/reconciler'
+import ComponentInstance from '../instances/component'
 
-let uid: number = 0
+let wid: number = 0
 
 export default class Watcher {
-  readonly id: number = uid++
-  readonly instance: Instance
+  readonly id: number = wid++
+  readonly instance: ComponentInstance
   depIds: Set<number> = new Set()
   newDepIds: Set<number> = new Set()
   list: Dependency[] = []
   newList: Dependency[] = []
-
-  constructor(instance: Instance) {
+  
+  constructor(instance: ComponentInstance) {
     this.instance = instance
   }
 
@@ -31,7 +31,7 @@ export default class Watcher {
   }
 
   // clean up all dependencies and unsubscribe this watcher
-  cleanUp() {
+  clean() {
     let i = this.list.length
     while (i--) {
       const dep = this.list[i]

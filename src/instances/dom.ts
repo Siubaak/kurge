@@ -138,7 +138,7 @@ export default class DOMInstance implements Instance {
       if (is.undefined(nextProps[prop]) || is.null(nextProps[prop])) {
         if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
           // remove the listener
-          eventListenerSet.del(this.id, prop.toLowerCase().replace(CUT_ON_REGEX, ''))
+          eventListenerSet.remove(this.id, prop.toLowerCase().replace(CUT_ON_REGEX, ''))
         } else {
           // remove the attribute
           node.removeAttribute(prop !== 'className' ? prop : 'class')
@@ -165,7 +165,7 @@ export default class DOMInstance implements Instance {
     this.element = nextElement
   }
   unmount() {
-    eventListenerSet.delAll(this.id)
+    eventListenerSet.clean(this.id)
     this.childInstances.forEach((child: Instance) => child.unmount())
     this.node.remove()
     delete this.id

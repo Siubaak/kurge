@@ -2,7 +2,7 @@ import { DATA_ID, SUPPORTED_EVENTS } from '../common/constants'
 import { getParentId } from '../utils/dom'
 
 // delegated listener set. mount all listener on document node
-export class EventListenerSet {
+class EventListenerSet {
   private readonly _eventListeners:  {
     [ key: string ]: {
       [ event: string ]: (e: Event) => void
@@ -35,12 +35,12 @@ export class EventListenerSet {
     }
     this._eventListeners[id][event] = eventListener
   }
-  del(id: string, event: string): void {
+  remove(id: string, event: string): void {
     if (this._eventListeners[id]) {
       delete this._eventListeners[id][event]
     }
   }
-  delAll(id: string): void {
+  clean(id: string): void {
     delete this._eventListeners[id]
   }
 }
