@@ -11,7 +11,7 @@ import onUpdated from './hooks/effects/updated'
 import onBeforeUnMount from './hooks/effects/before-unmount'
 import onUnMounted from './hooks/effects/unmounted'
 
-const Keactive = {
+const Kurge = {
   render,
   createElement,
 
@@ -27,9 +27,9 @@ const Keactive = {
 }
 
 try {
-  (window as any).Keactive = Keactive
+  (window as any).Kurge = Kurge
 } catch (err) {
   /* empty */
 }
 
-export default Keactive
+export default Kurge

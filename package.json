@@ -1,5 +1,5 @@
 {
-  "name": "keactive",
+  "name": "kurge",
   "version": "0.0.1",
   "description": "a reactive function component based javascript ui binding library",
   "main": "index.js",
@@ -9,19 +9,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Siubaak/keactive.git"
+    "url": "git+https://github.com/Siubaak/kurge.git"
   },
   "keywords": [
-    "keactive",
+    "kurge",
     "reactive",
     "mvvm"
   ],
   "author": "baakqiu",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Siubaak/keactive/issues"
+    "url": "https://github.com/Siubaak/kurge/issues"
   },
-  "homepage": "https://github.com/Siubaak/keactive#readme",
+  "homepage": "https://github.com/Siubaak/kurge#readme",
   "devDependencies": {
     "rollup": "^1.1.0",
     "rollup-plugin-typescript2": "^0.18.1",
