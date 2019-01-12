@@ -1,4 +1,4 @@
-import { Elem, VDomNode, Component } from '../common/types'
+import { Elem, VDomNode } from '../common/types'
 import { Instance } from '../common/types'
 import { is } from '../utils/index'
 import TextInstance from '../instances/text'
@@ -28,8 +28,19 @@ export function instantiate(element: Elem) {
 }
 
 // render markup and mount
-export default function render(component: Component, container: HTMLElement) {
-  const instance: Instance = instantiate(createElement(component))
+export default function render(vdom: VDomNode, container: HTMLElement) {
+  if (!is.object(vdom)) {
+    throw new TypeError('Please offer a legal VDOM node')
+  }
+  if (!container) {
+    throw new TypeError('A root DOM node is needed to mount the app')
+  }
+  let instance: Instance = null
+  if (is.string(vdom.type)) {
+    instance = instantiate(createElement(() => vdom))
+  } else {
+    instance = instantiate(vdom)
+  }
   const markup: string = instance.mount('k')
   container.innerHTML = markup
 }

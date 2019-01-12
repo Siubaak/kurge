@@ -1,11 +1,11 @@
-import observe from './observer/index'
+import useData from './hooks/data'
 import render from './renderer/index'
 import createElement from './vdom/create'
 
 const Keactive = {
   render,
   createElement,
-  useData: observe
+  useData
 }
 
 try {

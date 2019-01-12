@@ -10,7 +10,6 @@
   <div id="app"></div>
   <script src="../dist/index.js"></script>
   <script>
-    let data = Keactive.useData([])
     let id = 0
 
     function list(props) {
@@ -18,11 +17,12 @@
     }
 
     function app() {
+      const data = Keactive.useData([])
       function handleAdd() {
         data.push(++id)
       }
       function handleDel() {
-        if (data.pop()) --id
+        data.pop()
       }
       function handleBottomToTop() {
         data.unshift(data.pop())
@@ -35,7 +35,7 @@
       )
     }
 
-    Keactive.render(app, document.getElementById('app'))
+    Keactive.render(Keactive.createElement(app), document.getElementById('app'))
   </script>
 </body>
 </html>
