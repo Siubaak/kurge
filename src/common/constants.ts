@@ -1,6 +1,8 @@
 // dom node identified attribute name
 export const DATA_ID: string = 'data-kutid'
 
+export const PROXY_TARGET: symbol = Symbol('proxy_target')
+
 // vdom node reserved properties
 export const RESERVED_PROPS: {
   [prop: string]: boolean

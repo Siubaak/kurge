@@ -24,6 +24,8 @@ export function instantiate(element: Elem) {
   } else if (is.function((element as VDomNode).type)) {
     // if element.type is function, it is a component
     instance = new ComponentInstance(element as VDomNode)
+  } else {
+    throw new Error('illegal VDOM node type, please do not return array/null/undefined/etc in an app')
   }
   return instance
 }
@@ -42,7 +44,8 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   } else {
     instance = instantiate(vdom)
   }
-  const markup: string = instance.mount('kt')
+  const markup: string = instance.mount('kg')
   container.innerHTML = markup
   bus.emit('mounted')
+  bus.clean('mounted')
 }

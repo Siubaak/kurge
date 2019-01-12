@@ -5,7 +5,6 @@ export type Component = (props: any, context: any) => VDomNode
 export interface Instance {
   id: string
   index: number
-  type: string
 
   readonly key: string
   readonly node: HTMLElement

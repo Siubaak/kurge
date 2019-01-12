@@ -7,7 +7,6 @@ import { Elem, Instance } from '../common/types'
 export default class TextInstance implements Instance {
   id: string
   index: number
-  type: string = 'text'
   private element: number | string
 
   constructor(element: Elem) {

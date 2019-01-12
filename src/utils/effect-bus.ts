@@ -11,7 +11,6 @@ class EffectBus {
   emit(event: string) {
     if (this.listeners[event]) {
       this.listeners[event].forEach(callback => callback())
-      this.clean(event)
     }
   }
 

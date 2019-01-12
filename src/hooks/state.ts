@@ -1,5 +1,6 @@
 import observe from '../observer/index'
 import Dependency from '../observer/dependeny'
+import { PROXY_TARGET } from '../common/constants'
 
 export default function useState(state: any) {
   if (!Dependency.target) {
@@ -8,7 +9,12 @@ export default function useState(state: any) {
     const instance = Dependency.target.instance
     // if the component is mounting, it won't have an id
     if (!instance.id) {
-      instance.state = observe(state)
+      // merge duplicate states when invoke useState multiple times in a same component
+      if (instance.state) {
+        Object.assign(instance.state[PROXY_TARGET], state)
+      } else {
+        instance.state = observe(state)
+      }
     }
     return instance.state
   }

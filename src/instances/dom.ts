@@ -11,7 +11,6 @@ import { getNode, getClassString, getStyleString } from '../utils/dom'
 export default class DOMInstance implements Instance {
   id: string
   index: number
-  type: string = 'dom'
   private element: VDomNode
   private childInstances: Instance[]
 

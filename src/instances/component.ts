@@ -14,8 +14,7 @@ import { context } from '../hooks/context'
 export default class ComponentInstance implements Instance {
   id: string
   index: number
-  state: any
-  type: string = 'component'
+  state: any = null
   watcher: Watcher = new Watcher(this)
   private element: VDomNode
   private component: Component
@@ -37,12 +36,6 @@ export default class ComponentInstance implements Instance {
     return getNode(this.id)
   }
 
-  cleanEffect() {
-    bus.clean(`before-update:${this.id}`)
-    bus.clean(`updated:${this.id}`)
-    bus.clean(`before-unmount:${this.id}`)
-    bus.clean(`unmounted:${this.id}`)
-  }
   render(props: any) {
     pushTarget(this.watcher)
     const element: VDomNode = this.component(props, context.store)
@@ -62,7 +55,6 @@ export default class ComponentInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
-    this.cleanEffect()
     reconciler.enqueueUpdate(this.renderedInstance, this.render(nextElement.props))
     this.element = nextElement
   }
@@ -78,6 +70,9 @@ export default class ComponentInstance implements Instance {
     delete this.component
     delete this.renderedInstance
     bus.emit(`unmounted:${this.id}`)
-    this.cleanEffect()
+    bus.clean(`before-update:${this.id}`)
+    bus.clean(`updated:${this.id}`)
+    bus.clean(`before-unmount:${this.id}`)
+    bus.clean(`unmounted:${this.id}`)
   }
 }

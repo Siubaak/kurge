@@ -6,9 +6,10 @@ export default function onBeforeUnMount(callback: () => void) {
     throw new Error('please invoke onBeforeUnMount at top level in a component')
   } else {
     const instance = Dependency.target.instance
-    // if the component has been mounted, it will have an id
-    if (instance.id) {
-      bus.on(`before-unmount:${instance.id}`, callback)
+    // if the component is mounting, it won't have an id
+    // when it's mounted, add the before-unmount hook
+    if (!instance.id) {
+      bus.on('mounted', () => bus.on(`before-unmount:${instance.id}`, callback))
     }
   }
 }

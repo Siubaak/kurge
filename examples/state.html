@@ -12,10 +12,11 @@
   <script>
     const { render, useState, createElement: h } = Kurge
 
-    let id = 0
+    let id = 1
 
     function app() {
-      const data = useState([])
+      const a = useState([])
+      const data = useState([1])
       function handleAdd() {
         data.push(++id)
       }

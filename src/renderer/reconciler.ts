@@ -2,6 +2,7 @@ import Heap from '../utils/heap'
 import bus from '../utils/effect-bus'
 import { nextTick } from '../utils/index'
 import { Elem, Instance, DirtyInstance } from '../common/types'
+import ComponentInstance from '../instances/component'
 
 // dirty instance set 
 class DirtyInstanceSet {
@@ -49,13 +50,15 @@ class Reconciler {
         const { instance, element } = this.dirtyInstanceSet.shift()
         // check id to prevent the instance has been unmounted before updating
         if (instance.id) {
-          if (instance.type === 'component') {
+          if (instance instanceof ComponentInstance) {
             bus.emit(`before-update:${instance.id}`)
           }
           instance.update(element)
+          if (instance instanceof ComponentInstance) {
+            bus.emit(`updated:${instance.id}`)
+          }
         }
       }
-      bus.emit('updated')
       this.isBatchUpdating = false
     })
   }
