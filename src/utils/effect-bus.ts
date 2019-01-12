@@ -1,4 +1,4 @@
-class Bus {
+class EffectBus {
   private listeners: { [event: string]: (() => void)[] } = {}
 
   on(event: string, callback: () => void) {
@@ -11,6 +11,7 @@ class Bus {
   emit(event: string) {
     if (this.listeners[event]) {
       this.listeners[event].forEach(callback => callback())
+      this.clean(event)
     }
   }
 
@@ -19,4 +20,4 @@ class Bus {
   }
 }
 
-export default new Bus()
+export default new EffectBus()

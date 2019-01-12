@@ -5,6 +5,7 @@ import TextInstance from '../instances/text'
 import DOMInstance from '../instances/dom'
 import ComponentInstance from '../instances/component'
 import createElement from '../vdom/create'
+import bus from '../utils/effect-bus'
 
 // instantiate vdom element 
 export function instantiate(element: Elem) {
@@ -43,4 +44,5 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   }
   const markup: string = instance.mount('kt')
   container.innerHTML = markup
+  bus.emit('mounted')
 }

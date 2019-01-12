@@ -1,4 +1,5 @@
 import { is } from '../utils/index'
+import bus from '../utils/effect-bus'
 import { getNode } from '../utils/dom'
 import { instantiate } from '../renderer/index'
 import reconciler from '../renderer/reconciler'
@@ -14,6 +15,7 @@ export default class ComponentInstance implements Instance {
   id: string
   index: number
   state: any
+  type: string = 'component'
   watcher: Watcher = new Watcher(this)
   private element: VDomNode
   private component: Component
@@ -35,6 +37,12 @@ export default class ComponentInstance implements Instance {
     return getNode(this.id)
   }
 
+  cleanEffect() {
+    bus.clean(`before-update:${this.id}`)
+    bus.clean(`updated:${this.id}`)
+    bus.clean(`before-unmount:${this.id}`)
+    bus.clean(`unmounted:${this.id}`)
+  }
   render(props: any) {
     pushTarget(this.watcher)
     const element: VDomNode = this.component(props, context.store)
@@ -54,10 +62,12 @@ export default class ComponentInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+    this.cleanEffect()
     reconciler.enqueueUpdate(this.renderedInstance, this.render(nextElement.props))
     this.element = nextElement
   }
   unmount() {
+    bus.emit(`before-unmount:${this.id}`)
     this.renderedInstance.unmount()
     this.watcher.clean()
     delete this.id
@@ -67,5 +77,7 @@ export default class ComponentInstance implements Instance {
     delete this.element
     delete this.component
     delete this.renderedInstance
+    bus.emit(`unmounted:${this.id}`)
+    this.cleanEffect()
   }
 }

@@ -4,11 +4,26 @@ import createElement from './vdom/create'
 import useState from './hooks/state'
 import useContext from './hooks/context'
 
+import onBeforeMount from './hooks/effects/before-mount'
+import onMounted from './hooks/effects/mounted'
+import onBeforeUpdate from './hooks/effects/before-update'
+import onUpdated from './hooks/effects/updated'
+import onBeforeUnMount from './hooks/effects/before-unmount'
+import onUnMounted from './hooks/effects/unmounted'
+
 const Keactive = {
   render,
   createElement,
+
   useState,
-  useContext
+  useContext,
+
+  onBeforeMount,
+  onMounted,
+  onBeforeUpdate,
+  onUpdated,
+  onBeforeUnMount,
+  onUnMounted
 }
 
 try {

@@ -10,7 +10,7 @@
   <div id="app"></div>
   <script src="../dist/index.js"></script>
   <script>
-    const { render, useState, createElement: h } = Keactive
+    const { render, useState, createElement: h, onBeforeMount, onMounted, onBeforeUpdate, onUpdated } = Keactive
 
     let id = 0
 
@@ -25,6 +25,10 @@
       function handleBottomToTop() {
         data.unshift(data.pop())
       }
+      onBeforeMount(() => console.log('before-mount'))
+      onMounted(() => console.log('mounted'))
+      onBeforeUpdate(() => console.log('before-update'))
+      onUpdated(() => console.log('updated'))
       return h('div', {},
         h('button', { onClick: handleAdd }, 'add'),
         h('button', { onClick: handleDel }, 'del'),

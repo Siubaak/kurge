@@ -10,11 +10,14 @@
   <div id="app"></div>
   <script src="../dist/index.js"></script>
   <script>
+    const { render, useContext, createElement: h } = Keactive
+
     let id = 0
-    Keactive.useContext([])
+
+    useContext([])
 
     function list(_, context) {
-      return Keactive.createElement('ul', {}, context.map((i) => Keactive.createElement('li', { key: i }, i)))
+      return h('ul', {}, context.map((i) => h('li', { key: i }, i)))
     }
 
     function app(_, context) {
@@ -27,15 +30,15 @@
       function handleBottomToTop() {
         context.unshift(context.pop())
       }
-      return Keactive.createElement('div', {},
-        Keactive.createElement('button', { onClick: handleAdd }, 'add'),
-        Keactive.createElement('button', { onClick: handleDel }, 'del'),
-        Keactive.createElement('button', { onClick: handleBottomToTop }, 'bottom to top'),
-        Keactive.createElement(list)
+      return h('div', {},
+        h('button', { onClick: handleAdd }, 'add'),
+        h('button', { onClick: handleDel }, 'del'),
+        h('button', { onClick: handleBottomToTop }, 'bottom to top'),
+        h(list)
       )
     }
 
-    Keactive.render(Keactive.createElement(app), document.getElementById('app'))
+    render(h(app), document.getElementById('app'))
   </script>
 </body>
 </html>
