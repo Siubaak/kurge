@@ -143,10 +143,7 @@ export function patch(parentId: string, patches: Patches): void {
   let insertNum: number = 0
   ops.forEach((op: PatchOp) => {
     // calculate index of the node for insertBefore
-    const beforeIndex: number =
-      dir === 'forward'
-      ? op.index + 1 + insertNum
-      : op.index
+    const beforeIndex: number = dir === 'forward' ? op.index + 1 + insertNum : op.index
     if (op.type === 'remove') {
       // unmount
       op.inst.unmount()

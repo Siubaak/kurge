@@ -6,6 +6,8 @@ import reconciler from '../renderer/reconciler'
 import { DATA_ID, CUT_ON_REGEX, SUPPORTED_LISTENERS } from '../common/constants'
 import { VDomNode, Elem, Patches, Instance } from '../common/types'
 import { getNode, getClassString, getStyleString } from '../utils/dom'
+import Dependency from '../observer/dependeny'
+import bus from '../utils/effect-bus'
 
 // dom node instance class
 export default class DOMInstance implements Instance {
@@ -76,6 +78,12 @@ export default class DOMInstance implements Instance {
 
     // tail
     markup += `</${this.element.type}>`
+
+    // if set ref, return it when mounted
+    if (is.string(this.element.ref) && Dependency.target) {
+      const compInst = Dependency.target.instance
+      bus.on('mounted:refs', () => compInst.refs[this.element.ref] = this.node)
+    }
 
     return markup
   }

@@ -3,6 +3,7 @@ import createElement from './vdom/create'
 
 import useState from './hooks/state'
 import useContext from './hooks/context'
+import useRefs from './hooks/refs'
 
 import onBeforeMount from './hooks/effects/before-mount'
 import onMounted from './hooks/effects/mounted'
@@ -17,6 +18,7 @@ const Kurge = {
 
   useState,
   useContext,
+  useRefs,
 
   onBeforeMount,
   onMounted,

@@ -28,7 +28,7 @@ export interface Props {
 export interface VDomNode {
   type: string | Component
   key: string
-  ref: (node: HTMLElement) => void
+  ref: string
   props: Props
 }
 

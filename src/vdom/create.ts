@@ -11,12 +11,12 @@ export default function createElement(
   children = children.length ? [].concat(...children) : ['']
   const props: Props = { children: children as Elem[] }
   let key: string = null
-  let ref: (node: HTMLElement) => void = null
+  let ref: string = null
   if (config) {
     if (config.key != null) {
       key = ('' + (config.key as string)).replace(/:/g, '_')
     }
-    if (config.ref && is.function(config.ref)) {
+    if (config.ref && is.string(config.ref)) {
       ref = config.ref
     }
     for (const prop in config) {

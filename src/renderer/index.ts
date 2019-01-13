@@ -46,6 +46,8 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   }
   const markup: string = instance.mount('kg')
   container.innerHTML = markup
+  bus.emit('mounted:refs')
   bus.emit('mounted')
+  bus.clean('mounted:refs')
   bus.clean('mounted')
 }
