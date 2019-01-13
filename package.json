@@ -2,6 +2,7 @@
   "name": "kurge",
   "version": "0.0.1",
   "description": "a reactive function component based javascript ui binding library",
+  "types": "./types/index.d.ts",
   "main": "index.js",
   "scripts": {
     "build": "rollup -c",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "rollup": "^1.1.0",
     "rollup-plugin-typescript2": "^0.18.1",
+    "rollup-plugin-uglify": "^6.0.1",
     "typescript": "^3.2.2"
   }
 }

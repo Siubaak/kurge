@@ -28,10 +28,4 @@ const Kurge = {
   onUnMounted
 }
 
-try {
-  (window as any).Kurge = Kurge
-} catch (err) {
-  /* empty */
-}
-
 export default Kurge

@@ -1,0 +1,25 @@
+import render from './renderer/index';
+import createElement from './vdom/create';
+import useState from './hooks/state';
+import useContext from './hooks/context';
+import useRefs from './hooks/refs';
+import onBeforeMount from './hooks/effects/before-mount';
+import onMounted from './hooks/effects/mounted';
+import onBeforeUpdate from './hooks/effects/before-update';
+import onUpdated from './hooks/effects/updated';
+import onBeforeUnMount from './hooks/effects/before-unmount';
+import onUnMounted from './hooks/effects/unmounted';
+declare const Kurge: {
+    render: typeof render;
+    createElement: typeof createElement;
+    useState: typeof useState;
+    useContext: typeof useContext;
+    useRefs: typeof useRefs;
+    onBeforeMount: typeof onBeforeMount;
+    onMounted: typeof onMounted;
+    onBeforeUpdate: typeof onBeforeUpdate;
+    onUpdated: typeof onUpdated;
+    onBeforeUnMount: typeof onBeforeUnMount;
+    onUnMounted: typeof onUnMounted;
+};
+export default Kurge;

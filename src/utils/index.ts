@@ -1,6 +1,5 @@
-const _toString = Object.prototype.toString
-
 // strict type validators
+const _toString = Object.prototype.toString
 export const is = {
   undefined: (val: any) => _toString.call(val) === '[object Undefined]',
   null: (val: any) => _toString.call(val) === '[object Null]',
@@ -14,9 +13,8 @@ export const is = {
   function: (val: any) => _toString.call(val) === '[object Function]'
 }
 
-const _hasOwn = Object.prototype.hasOwnProperty
-
 // has own property
+const _hasOwn = Object.prototype.hasOwnProperty
 export function hasOwn(object: any, property: string | number | symbol) {
   return _hasOwn.call(object, property)
 }
@@ -36,3 +34,13 @@ export function swap(a: any, b: any) { [a, b] = [b, a] }
 
 // push the callback to next frame event loop
 export const nextTick = requestAnimationFrame
+
+// ES6 Object.assign polyfill for two objects
+export function assign(target: any, object: any): any {
+  for (const key in object) {
+    if (hasOwn(object, key)) {
+      target[key] = object[key]
+    }
+  }
+  return target
+}

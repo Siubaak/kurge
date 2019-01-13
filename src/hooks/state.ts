@@ -1,6 +1,7 @@
 import observe from '../observer/index'
 import Dependency from '../observer/dependeny'
 import { PROXY_TARGET } from '../common/constants'
+import { assign } from '../utils/index'
 
 export default function useState(state: any) {
   if (!Dependency.target) {
@@ -11,7 +12,7 @@ export default function useState(state: any) {
     if (!instance.id) {
       // merge duplicate states when invoke useState multiple times in a same component
       if (instance.state) {
-        Object.assign(instance.state[PROXY_TARGET], state)
+        assign(instance.state[PROXY_TARGET], state)
       } else {
         instance.state = observe(state)
       }

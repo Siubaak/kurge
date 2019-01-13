@@ -1,9 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
+    "lib": ["dom", "es5", "es2015.proxy", "es2015.reflect"],
     "declaration": true,
     "noImplicitAny": true,
-    "removeComments": true
+    "removeComments": true,
+    "declarationDir": "types"
   },
   "include": [
     "src/**/*"

@@ -7,8 +7,8 @@ let wid: number = 0
 export default class Watcher {
   readonly id: number = wid++
   readonly instance: ComponentInstance
-  depIds: Set<number> = new Set()
-  newDepIds: Set<number> = new Set()
+  depIds: { [id: string]: boolean } = {}
+  newDepIds: { [id: string]: boolean } = {}
   list: Dependency[] = []
   newList: Dependency[] = []
   
@@ -20,10 +20,10 @@ export default class Watcher {
   // this method will be excute by the dependency
   depend(dep: Dependency) {
     const id = dep.id
-    if (!this.newDepIds.has(id)) {
-      this.newDepIds.add(id)
+    if (!this.newDepIds[id]) {
+      this.newDepIds[id] = true
       this.newList.push(dep)
-      if (!this.depIds.has(id)) {
+      if (!this.depIds[id]) {
         dep.subscribe(this)
       }
     }
@@ -34,12 +34,12 @@ export default class Watcher {
     let i = this.list.length
     while (i--) {
       const dep = this.list[i]
-      if (!this.newDepIds.has(dep.id)) {
+      if (!this.newDepIds[dep.id]) {
         dep.unsubscribe(this)
       }
     }
     [this.depIds, this.newDepIds] = [this.newDepIds, this.depIds]
-    this.newDepIds.clear();
+    this.newDepIds = {};
     [this.list, this.newList] = [this.newList, this.list]
     this.newList.length = 0
   }

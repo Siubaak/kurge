@@ -1,13 +1,29 @@
 import typescript from 'rollup-plugin-typescript2'
+import { uglify } from 'rollup-plugin-uglify'
 
-export default {
-  input: 'src/index.ts',
-  output: {
-    name: 'kurge',
-    file: 'dist/index.js',
-    format: 'umd'
+export default [
+  {
+    input: 'src/index.ts',
+    output: {
+      name: 'Kurge',
+      format: 'umd',
+      file: 'dist/index.js'
+    },
+    plugins: [
+      typescript({
+        useTsconfigDeclarationDir: true
+      })
+    ]
   },
-  plugins: [
-    typescript()
-  ]
-}
+  {
+    input: 'dist/index.js',
+    output: {
+      name: 'Kurge',
+      format: 'umd',
+      file: 'dist/kurge.min.js'
+    },
+    plugins: [
+      uglify()
+    ]
+  }
+]

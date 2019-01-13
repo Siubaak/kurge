@@ -1,7 +1,8 @@
 // dom node identified attribute name
 export const DATA_ID: string = 'data-kutid'
 
-export const PROXY_TARGET: symbol = Symbol('proxy_target')
+// key for getting origin target of proxy
+export const PROXY_TARGET: string = Math.random().toString(36).substring(2)
 
 // vdom node reserved properties
 export const RESERVED_PROPS: { [prop: string]: boolean } = { key: true, ref: true }
