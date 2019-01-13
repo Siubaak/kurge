@@ -9,7 +9,7 @@ class DirtyInstanceSet {
   private readonly map: { [ id: string ]: DirtyInstance } = {}
   private readonly arr: Heap<string> = new Heap(
     (contrast: string, self: string) =>
-      contrast.split(':').length < self.split(':').length
+      contrast.split(':').length > self.split(':').length
   )
   get length(): number {
     return this.arr.length

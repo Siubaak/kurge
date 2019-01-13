@@ -24,7 +24,9 @@
         data.pop()
       }
       function handleBottomToTop() {
-        data.unshift(data.pop())
+        if (data.length) {
+          data.unshift(data.pop())
+        }
       }
       return h('div', {},
         h('button', { onClick: handleAdd }, 'add'),

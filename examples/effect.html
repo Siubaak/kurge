@@ -15,12 +15,12 @@
     let id = 0
 
     function list(props) {
-      onBeforeMount(() => console.log('list before-mount'))
-      onMounted(() => console.log('list mounted'))
-      onBeforeUpdate(() => console.log('list before-update'))
-      onUpdated(() => console.log('list updated'))
-      onBeforeUnMount(() => console.log('list before-unmount'))
-      onUnMounted(() => console.log('list unmounted'))
+      onBeforeMount(() => console.log('  list before-mount'))
+      onMounted(() => console.log('  list mounted'))
+      onBeforeUpdate(() => console.log('  list before-update'))
+      onUpdated(() => console.log('  list updated'))
+      onBeforeUnMount(() => console.log('  list before-unmount'))
+      onUnMounted(() => console.log('  list unmounted'))
       return h('ul', {}, props.list.map((i) => h('li', { key: i }, i)))
     }
 
@@ -33,7 +33,9 @@
         data.pop()
       }
       function handleBottomToTop() {
-        data.unshift(data.pop())
+        if (data.length) {
+          data.unshift(data.pop())
+        }
       }
       onBeforeMount(() => console.log('app before-mount'))
       onMounted(() => console.log('app mounted'))
