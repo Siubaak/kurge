@@ -66,6 +66,7 @@ export default class ComponentInstance implements Instance {
     this.watcher.clean()
     delete this.index
     delete this.state
+    delete this.refs
     delete this.watcher
     delete this.element
     delete this.component
