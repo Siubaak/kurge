@@ -29,8 +29,8 @@
         context.pop()
       }
       function handleBottomToTop() {
-        if (data.length) {
-          data.unshift(data.pop())
+        if (context.length) {
+          context.unshift(context.pop())
         }
       }
       return h('div', {},
