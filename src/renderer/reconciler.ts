@@ -55,11 +55,13 @@ class Reconciler {
           }
           instance.update(element)
           if (instance instanceof ComponentInstance) {
-            bus.emit(`updated:${instance.id}`)
+            bus.on('updated', () => bus.emit(`updated:${instance.id}`))
           }
         }
       }
       this.isBatchUpdating = false
+      bus.emit('updated', true)
+      bus.clean('updated')
     })
   }
 }

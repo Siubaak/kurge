@@ -1,5 +1,3 @@
-import { swap } from './index'
-
 // binary heap for reconciler
 export default class Heap<T> {
   private readonly arr: T[] = []
@@ -40,7 +38,7 @@ export default class Heap<T> {
       m = r
     }
     if (m !== i) {
-      swap(this.arr[i], this.arr[m])
+      [this.arr[i], this.arr[m]] = [this.arr[m], this.arr[i]]
       this.heapify(m)
     }
   }
@@ -48,7 +46,7 @@ export default class Heap<T> {
   private promote(i: number): void {
     let p = this.parent(i)
     while (this.arr[p] && this.compare(this.arr[p], this.arr[i])) {
-      swap(this.arr[i], this.arr[p])
+      [this.arr[i], this.arr[p]] = [this.arr[p], this.arr[i]]
       i = p
       p = this.parent(i)
     }

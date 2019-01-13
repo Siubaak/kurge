@@ -1,5 +1,4 @@
 import Dependency from './dependeny'
-import { swap } from '../utils/index'
 import reconciler from '../renderer/reconciler'
 import ComponentInstance from '../instances/component'
 
@@ -39,9 +38,9 @@ export default class Watcher {
         dep.unsubscribe(this)
       }
     }
-    swap(this.depIds, this.newDepIds)
-    this.newDepIds.clear()
-    swap(this.list, this.newList)
+    [this.depIds, this.newDepIds] = [this.newDepIds, this.depIds]
+    this.newDepIds.clear();
+    [this.list, this.newList] = [this.newList, this.list]
     this.newList.length = 0
   }
 

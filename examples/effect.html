@@ -10,9 +10,19 @@
   <div id="app"></div>
   <script src="../dist/index.js"></script>
   <script>
-    const { render, useState, createElement: h, onBeforeMount, onMounted, onBeforeUpdate, onUpdated } = Kurge
+    const { render, useState, createElement: h, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnMount, onUnMounted } = Kurge
 
     let id = 0
+
+    function list(props) {
+      onBeforeMount(() => console.log('list before-mount'))
+      onMounted(() => console.log('list mounted'))
+      onBeforeUpdate(() => console.log('list before-update'))
+      onUpdated(() => console.log('list updated'))
+      onBeforeUnMount(() => console.log('list before-unmount'))
+      onUnMounted(() => console.log('list unmounted'))
+      return h('ul', {}, props.list.map((i) => h('li', { key: i }, i)))
+    }
 
     function app() {
       const data = useState([])
@@ -25,15 +35,16 @@
       function handleBottomToTop() {
         data.unshift(data.pop())
       }
-      onBeforeMount(() => console.log('before-mount'))
-      onMounted(() => console.log('mounted'))
-      onBeforeUpdate(() => console.log('before-update'))
-      onUpdated(() => console.log('updated'))
+      onBeforeMount(() => console.log('app before-mount'))
+      onMounted(() => console.log('app mounted'))
+      onBeforeUpdate(() => console.log('app before-update'))
+      onUpdated(() => console.log('app updated'))
       return h('div', {},
         h('button', { onClick: handleAdd }, 'add'),
         h('button', { onClick: handleDel }, 'del'),
         h('button', { onClick: handleBottomToTop }, 'bottom to top'),
-        h('ul', {}, data.map((i) => h('li', { key: i }, i)))
+        h('p', {}, data.length),
+        data.length ? h(list, { list: data }) : h('p', {}, 'no data')
       )
     }
 

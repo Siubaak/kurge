@@ -8,9 +8,17 @@ class EffectBus {
     this.listeners[event].push(callback)
   }
 
-  emit(event: string) {
+  emit(event: string, reverse: boolean = false) {
     if (this.listeners[event]) {
-      this.listeners[event].forEach(callback => callback())
+      if (reverse) {
+        for (let i = this.listeners[event].length - 1; i > -1; i--) {
+          this.listeners[event][i]()
+        }
+      } else {
+        for (let i = 0; i < this.listeners[event].length; i++) {
+          this.listeners[event][i]()
+        }
+      }
     }
   }
 

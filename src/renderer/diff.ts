@@ -2,6 +2,8 @@ import { Elem, VDomNode, Instance, Patches, PatchOp } from '../common/types'
 import { instantiate } from '../renderer/index'
 import { getNode, createNode } from '../utils/dom'
 import reconciler from './reconciler'
+import ComponentInstance from '../instances/component'
+import bus from '../utils/effect-bus'
 
 // diff two array, and return the least operations to modify
 // use both frontward diff and backward diff, and return the less modify operation of them
@@ -22,7 +24,10 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
     const prevInstance: Instance = prevInstanceMap[key]
     if (prevInstance && prevInstance.same(nextChild)) {
       // if previous instance exists and vdom is same, just update
-      reconciler.enqueueUpdate(prevInstance, nextChild)
+      // but ignore update component instance, because it will update itself
+      if (!(prevInstance instanceof ComponentInstance)) {
+        reconciler.enqueueUpdate(prevInstance, nextChild)
+      }
       nextInstances.push(prevInstance)
     } else {
       const nextInstance = instantiate(nextChild)
@@ -154,6 +159,8 @@ export function patch(parentId: string, patches: Patches): void {
         const beforeNode = container.children[beforeIndex]
         // insertBefore will degenerate to be appendChild if beforeNode is undefined
         container.insertBefore(node, beforeNode)
+        bus.emit('mounted')
+        bus.clean('mounted')
       } else {
         // move, and getting the node needed to be moved is enough
         const node = op.inst.node

@@ -62,7 +62,6 @@ export default class ComponentInstance implements Instance {
     bus.emit(`before-unmount:${this.id}`)
     this.renderedInstance.unmount()
     this.watcher.clean()
-    delete this.id
     delete this.index
     delete this.state
     delete this.watcher
@@ -74,5 +73,6 @@ export default class ComponentInstance implements Instance {
     bus.clean(`updated:${this.id}`)
     bus.clean(`before-unmount:${this.id}`)
     bus.clean(`unmounted:${this.id}`)
+    delete this.id
   }
 }

@@ -35,6 +35,4 @@ export function delArrItem(arr: any[], item: any): any[] | void {
 export function swap(a: any, b: any) { [a, b] = [b, a] }
 
 // push the callback to next frame event loop
-export function nextTick(callback: () => void) {
-  setTimeout(callback, 16)
-}
+export const nextTick = requestAnimationFrame
