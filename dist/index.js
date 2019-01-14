@@ -315,53 +315,6 @@
       Dependency.target = targetStack[targetStack.length - 1];
   }
 
-  function observe(data) {
-      if (!is.object(data) && !is.array(data)) {
-          throw new Error('observed data must be object or array');
-      }
-      var dep = new Dependency();
-      return new Proxy(data, {
-          get: function (target, property, receiver) {
-              if (property === PROXY_TARGET) {
-                  return target;
-              }
-              if (hasOwn(target, property)) {
-                  if (Dependency.target) {
-                      dep.collect();
-                  }
-              }
-              return Reflect.get(target, property, receiver);
-          },
-          set: function (target, property, value, receiver) {
-              if (hasOwn(target, property) || is.undefined(target[property])) {
-                  if (value !== target[property]) {
-                      dep.notify();
-                  }
-              }
-              return Reflect.set(target, property, value, receiver);
-          },
-          deleteProperty: function (target, property) {
-              if (hasOwn(target, property)) {
-                  dep.notify();
-              }
-              return Reflect.deleteProperty(target, property);
-          }
-      });
-  }
-
-  var context = { store: null };
-  function useContext(ctx) {
-      if (Dependency.target) {
-          throw new Error('please invoke useContext at top level outside all components');
-      }
-      else if (context.store) {
-          assign(context.store[PROXY_TARGET], ctx);
-      }
-      else {
-          context.store = observe(ctx);
-      }
-  }
-
   var ComponentInstance = (function () {
       function ComponentInstance(element) {
           this.state = null;
@@ -390,7 +343,7 @@
       });
       ComponentInstance.prototype.mount = function (id) {
           pushTarget(this.watcher);
-          this.renderedInstance = instantiate(this.component(this.element.props, context.store));
+          this.renderedInstance = instantiate(this.component(this.element.props));
           var markup = this.renderedInstance.mount(this.id = id);
           popTarget();
           this.watcher.clean();
@@ -404,7 +357,7 @@
       ComponentInstance.prototype.update = function (nextElement) {
           nextElement = nextElement == null ? this.element : nextElement;
           pushTarget(this.watcher);
-          reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props, context.store));
+          reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props));
           popTarget();
           this.watcher.clean();
           this.element = nextElement;
@@ -885,6 +838,40 @@
       bus.clean('mounted');
   }
 
+  function observe(data) {
+      if (!is.object(data) && !is.array(data)) {
+          throw new Error('observed data must be object or array');
+      }
+      var dep = new Dependency();
+      return new Proxy(data, {
+          get: function (target, property, receiver) {
+              if (property === PROXY_TARGET) {
+                  return target;
+              }
+              if (hasOwn(target, property)) {
+                  if (Dependency.target) {
+                      dep.collect();
+                  }
+              }
+              return Reflect.get(target, property, receiver);
+          },
+          set: function (target, property, value, receiver) {
+              if (hasOwn(target, property) || is.undefined(target[property])) {
+                  if (value !== target[property]) {
+                      dep.notify();
+                  }
+              }
+              return Reflect.set(target, property, value, receiver);
+          },
+          deleteProperty: function (target, property) {
+              if (hasOwn(target, property)) {
+                  dep.notify();
+              }
+              return Reflect.deleteProperty(target, property);
+          }
+      });
+  }
+
   function useState(state) {
       if (!Dependency.target) {
           throw new Error('please invoke useState at top level in a component');
@@ -900,6 +887,15 @@
               }
           }
           return instance.state;
+      }
+  }
+
+  function useContext(ctx) {
+      if (Dependency.target) {
+          throw new Error('please invoke useContext at top level outside all components');
+      }
+      else {
+          return observe(ctx);
       }
   }
 

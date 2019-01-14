@@ -8,8 +8,6 @@ import { VDomNode, Elem, Component, Instance } from '../common/types'
 import Watcher from '../observer/watcher'
 import { pushTarget, popTarget } from '../observer/dependeny'
 
-import { context } from '../hooks/context'
-
 // custom function component instance class
 export default class ComponentInstance implements Instance {
   id: string
@@ -39,7 +37,7 @@ export default class ComponentInstance implements Instance {
 
   mount(id: string): string {
     pushTarget(this.watcher)
-    this.renderedInstance = instantiate(this.component(this.element.props, context.store))
+    this.renderedInstance = instantiate(this.component(this.element.props))
     const markup = this.renderedInstance.mount(this.id = id)
     popTarget()
     this.watcher.clean()
@@ -54,7 +52,7 @@ export default class ComponentInstance implements Instance {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
     
     pushTarget(this.watcher)
-    reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props, context.store))
+    reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props))
     popTarget()
     this.watcher.clean()
 

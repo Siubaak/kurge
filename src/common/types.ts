@@ -1,5 +1,5 @@
 // function component type
-export type Component = (props: any, context: any) => VDomNode
+export type Component = (props: any) => VDomNode
 
 // instance type
 export interface Instance {

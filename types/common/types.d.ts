@@ -1,4 +1,4 @@
-export declare type Component = (props: any, context: any) => VDomNode;
+export declare type Component = (props: any) => VDomNode;
 export interface Instance {
     id: string;
     index: number;

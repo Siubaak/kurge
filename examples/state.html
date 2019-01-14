@@ -15,8 +15,8 @@
     let id = 1
 
     function app() {
-      const a = useState([])
-      const data = useState([1])
+      const origin = useState([])
+      const data = useState([1]) // merge state
       function handleAdd() {
         data.push(++id)
       }

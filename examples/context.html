@@ -14,14 +14,13 @@
 
     let id = 1
 
-    useContext([])
-    useContext([1])
+    const context = useContext([1])
 
-    function list(_, context) {
+    function list() {
       return h('ul', {}, context.map((i) => h('li', { key: i }, i)))
     }
 
-    function app(_, context) {
+    function app() {
       function handleAdd() {
         context.push(++id)
       }
