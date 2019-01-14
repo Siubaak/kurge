@@ -17,9 +17,7 @@ Or, download the [minimized version](https://github.com/Siubaak/kurge/blob/maste
 
 ## Documentation
 
-You can find the Kurge documentation on the [wiki](https://github.com/Siubaak/kurge/wiki).  
-
-The website is still under contruction.
+You can find getting started and documentation on the [website](https://siubaak.github.io/kurge) or the [wiki](https://github.com/Siubaak/kurge/wiki).  
 
 ## Examples
 
