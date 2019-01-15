@@ -26,7 +26,9 @@ export default class TextInstance implements Instance {
     bus.on('mounted:refs', () => {
       const wrapper = getNode(this.id)
       this.node = wrapper.firstChild as HTMLElement
-      wrapper.parentNode.insertBefore(this.node, wrapper)
+      if (this.node) {
+        wrapper.parentNode.insertBefore(this.node, wrapper)
+      }
       wrapper.remove()
     })
 
@@ -48,6 +50,7 @@ export default class TextInstance implements Instance {
   unmount() {
     this.node.remove()
     delete this.id
+    delete this.node
     delete this.index
     delete this.element
   }

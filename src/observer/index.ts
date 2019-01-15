@@ -6,6 +6,13 @@ export default function observe(data: any) {
   if (!is.object(data) && !is.array(data)) {
     throw new Error('observed data must be object or array')
   }
+  for (const key in data) {
+    if (hasOwn(data, key)) {
+      if (is.object(data[key]) || is.array(data[key])) {
+        data[key] = observe(data[key])
+      }
+    }
+  }
   const dep: Dependency = new Dependency()
   return new Proxy(data, {
     get(target, property, receiver) {

@@ -37,6 +37,7 @@ export default class ComponentInstance implements Instance {
     const markup = this.renderedInstance.mount(this.id = id)
     popTarget()
     this.watcher.clean()
+    // save root node
     bus.on('mounted:refs', () => this.node = getNode(this.id))
     return markup
   }
@@ -59,6 +60,7 @@ export default class ComponentInstance implements Instance {
     this.watcher.clean()
     delete this.index
     delete this.state
+    delete this.node
     delete this.refs
     delete this.watcher
     delete this.element

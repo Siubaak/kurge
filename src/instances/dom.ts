@@ -176,6 +176,7 @@ export default class DOMInstance implements Instance {
     this.childInstances.forEach((child: Instance) => child.unmount())
     this.node.remove()
     delete this.id
+    delete this.node
     delete this.index
     delete this.element
     delete this.childInstances

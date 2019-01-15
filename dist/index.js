@@ -148,7 +148,9 @@
           bus.on('mounted:refs', function () {
               var wrapper = getNode(_this.id);
               _this.node = wrapper.firstChild;
-              wrapper.parentNode.insertBefore(_this.node, wrapper);
+              if (_this.node) {
+                  wrapper.parentNode.insertBefore(_this.node, wrapper);
+              }
               wrapper.remove();
           });
           return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
@@ -168,6 +170,7 @@
       TextInstance.prototype.unmount = function () {
           this.node.remove();
           delete this.id;
+          delete this.node;
           delete this.index;
           delete this.element;
       };
@@ -361,6 +364,7 @@
           this.watcher.clean();
           delete this.index;
           delete this.state;
+          delete this.node;
           delete this.refs;
           delete this.watcher;
           delete this.element;
@@ -753,6 +757,7 @@
           this.childInstances.forEach(function (child) { return child.unmount(); });
           this.node.remove();
           delete this.id;
+          delete this.node;
           delete this.index;
           delete this.element;
           delete this.childInstances;
@@ -832,6 +837,13 @@
       if (!is.object(data) && !is.array(data)) {
           throw new Error('observed data must be object or array');
       }
+      for (var key in data) {
+          if (hasOwn(data, key)) {
+              if (is.object(data[key]) || is.array(data[key])) {
+                  data[key] = observe(data[key]);
+              }
+          }
+      }
       var dep = new Dependency();
       return new Proxy(data, {
           get: function (target, property, receiver) {
@@ -870,7 +882,7 @@
           var instance = Dependency.target.instance;
           if (!instance.id) {
               if (instance.state) {
-                  assign(instance.state[PROXY_TARGET], state);
+                  assign(instance.state[PROXY_TARGET], observe(state)[PROXY_TARGET]);
               }
               else {
                   instance.state = observe(state);

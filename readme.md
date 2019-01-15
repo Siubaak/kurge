@@ -19,7 +19,7 @@ Or, download the [minimized version](https://github.com/Siubaak/kurge/blob/maste
 
 You can find getting started and documentation on the [website](https://siubaak.github.io/kurge) or the [wiki](https://github.com/Siubaak/kurge/wiki).  
 
-## Examples
+## Example
 
 Several [examples here](https://github.com/Siubaak/kurge/tree/master/docs/examples). You can get started with this first simple one, and it will render a `<p>` tag with text "Hello World!" into a "#app" root container:
 
@@ -32,9 +32,9 @@ function Hello() {
 Kurge.render(<Hello/>, document.getElementById('app'))
 ```
 
-Kurge are compatible with [JSX](https://reactjs.org/docs/introducing-jsx.html). Grateful for [React](https://reactjs.org) making such wonderful HTML-link syntax.
+Kurge are compatible with [JSX](https://reactjs.org/docs/introducing-jsx.html). Grateful for [React](https://reactjs.org) making such wonderful HTML-like syntax.
 
-## Notes
+## Note
 
 Kurge depends [Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy) and [Reflect](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Reflect) of ES6 to observe the state and context. So you need polyfills to run Kurge in those unsupported browsers.
 

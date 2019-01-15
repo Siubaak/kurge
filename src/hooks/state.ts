@@ -12,7 +12,7 @@ export default function useState(state: any) {
     if (!instance.id) {
       // merge duplicate states when invoke useState multiple times in a same component
       if (instance.state) {
-        assign(instance.state[PROXY_TARGET], state)
+        assign(instance.state[PROXY_TARGET], observe(state)[PROXY_TARGET])
       } else {
         instance.state = observe(state)
       }
