@@ -1,6 +1,6 @@
 {
   "name": "kurge",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "a reactive function component based javascript ui binding library",
   "types": "./types/index.d.ts",
   "main": "index.js",

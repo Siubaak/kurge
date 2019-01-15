@@ -6,6 +6,7 @@ import DOMInstance from '../instances/dom'
 import ComponentInstance from '../instances/component'
 import createElement from '../vdom/create'
 import bus from '../utils/effect-bus'
+import { createNode } from '../utils/dom'
 
 // instantiate vdom element 
 export function instantiate(element: Elem) {
@@ -45,7 +46,9 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
     instance = instantiate(vdom)
   }
   const markup: string = instance.mount('kg')
-  container.innerHTML = markup
+  const node = createNode(markup)
+  container.parentNode.insertBefore(node, container)
+  container.remove()
   bus.emit('mounted:refs')
   bus.emit('mounted')
   bus.clean('mounted:refs')

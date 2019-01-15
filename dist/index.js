@@ -39,7 +39,7 @@
       return target;
   }
 
-  var DATA_ID = 'data-kutid';
+  var DATA_ID = 'data-kgid';
   var PROXY_TARGET = Math.random().toString(36).substring(2);
   var RESERVED_PROPS = { key: true, ref: true };
   var CUT_ON_REGEX = /^on/;
@@ -98,28 +98,59 @@
       return markup.trim();
   }
 
+  var EffectBus = (function () {
+      function EffectBus() {
+          this.listeners = {};
+      }
+      EffectBus.prototype.on = function (event, callback) {
+          if (!this.listeners[event]) {
+              this.listeners[event] = [];
+          }
+          this.listeners[event].push(callback);
+      };
+      EffectBus.prototype.emit = function (event, reverse) {
+          if (reverse === void 0) { reverse = false; }
+          if (this.listeners[event]) {
+              if (reverse) {
+                  for (var i = this.listeners[event].length - 1; i > -1; i--) {
+                      this.listeners[event][i]();
+                  }
+              }
+              else {
+                  for (var i = 0; i < this.listeners[event].length; i++) {
+                      this.listeners[event][i]();
+                  }
+              }
+          }
+      };
+      EffectBus.prototype.clean = function (event) {
+          delete this.listeners[event];
+      };
+      return EffectBus;
+  }());
+  var bus = new EffectBus();
+
   var TextInstance = (function () {
       function TextInstance(element) {
+          this.node = null;
           this.element = '' + element;
       }
       Object.defineProperty(TextInstance.prototype, "key", {
           get: function () {
-              return this.index != null
-                  ? '' + this.index
-                  : null;
-          },
-          enumerable: true,
-          configurable: true
-      });
-      Object.defineProperty(TextInstance.prototype, "node", {
-          get: function () {
-              return getNode(this.id);
+              return this.index != null ? '' + this.index : null;
           },
           enumerable: true,
           configurable: true
       });
       TextInstance.prototype.mount = function (id) {
+          var _this = this;
           this.id = id;
+          bus.on('mounted:refs', function () {
+              var wrapper = getNode(_this.id);
+              _this.node = wrapper.firstChild;
+              wrapper.parentNode.insertBefore(_this.node, wrapper);
+              wrapper.remove();
+          });
           return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
       };
       TextInstance.prototype.same = function (nextElement) {
@@ -131,7 +162,7 @@
               : '' + nextElement;
           if (this.element !== nextElement) {
               this.element = nextElement;
-              this.node.innerText = this.element;
+              this.node.textContent = this.element;
           }
       };
       TextInstance.prototype.unmount = function () {
@@ -207,38 +238,6 @@
       };
       return Heap;
   }());
-
-  var EffectBus = (function () {
-      function EffectBus() {
-          this.listeners = {};
-      }
-      EffectBus.prototype.on = function (event, callback) {
-          if (!this.listeners[event]) {
-              this.listeners[event] = [];
-          }
-          this.listeners[event].push(callback);
-      };
-      EffectBus.prototype.emit = function (event, reverse) {
-          if (reverse === void 0) { reverse = false; }
-          if (this.listeners[event]) {
-              if (reverse) {
-                  for (var i = this.listeners[event].length - 1; i > -1; i--) {
-                      this.listeners[event][i]();
-                  }
-              }
-              else {
-                  for (var i = 0; i < this.listeners[event].length; i++) {
-                      this.listeners[event][i]();
-                  }
-              }
-          }
-      };
-      EffectBus.prototype.clean = function (event) {
-          delete this.listeners[event];
-      };
-      return EffectBus;
-  }());
-  var bus = new EffectBus();
 
   var wid = 0;
   var Watcher = (function () {
@@ -318,6 +317,7 @@
   var ComponentInstance = (function () {
       function ComponentInstance(element) {
           this.state = null;
+          this.node = null;
           this.refs = {};
           this.watcher = new Watcher(this);
           this.element = element;
@@ -327,26 +327,19 @@
           get: function () {
               return this.element && this.element.key != null
                   ? 'k_' + this.element.key
-                  : this.index != null
-                      ? '' + this.index
-                      : null;
-          },
-          enumerable: true,
-          configurable: true
-      });
-      Object.defineProperty(ComponentInstance.prototype, "node", {
-          get: function () {
-              return getNode(this.id);
+                  : this.index != null ? '' + this.index : null;
           },
           enumerable: true,
           configurable: true
       });
       ComponentInstance.prototype.mount = function (id) {
+          var _this = this;
           pushTarget(this.watcher);
           this.renderedInstance = instantiate(this.component(this.element.props));
           var markup = this.renderedInstance.mount(this.id = id);
           popTarget();
           this.watcher.clean();
+          bus.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           return markup;
       };
       ComponentInstance.prototype.same = function (nextElement) {
@@ -572,7 +565,9 @@
                   var node = createNode(markup);
                   var beforeNode = container.children[beforeIndex];
                   container.insertBefore(node, beforeNode);
+                  bus.emit('mounted:refs');
                   bus.emit('mounted');
+                  bus.clean('mounted:refs');
                   bus.clean('mounted');
               }
               else {
@@ -627,22 +622,14 @@
 
   var DOMInstance = (function () {
       function DOMInstance(element) {
+          this.node = null;
           this.element = element;
       }
       Object.defineProperty(DOMInstance.prototype, "key", {
           get: function () {
               return this.element && this.element.key != null
                   ? 'k_' + this.element.key
-                  : this.index != null
-                      ? '' + this.index
-                      : null;
-          },
-          enumerable: true,
-          configurable: true
-      });
-      Object.defineProperty(DOMInstance.prototype, "node", {
-          get: function () {
-              return getNode(this.id);
+                  : this.index != null ? '' + this.index : null;
           },
           enumerable: true,
           configurable: true
@@ -682,6 +669,7 @@
               _this.childInstances.push(instance);
           });
           markup += "</" + this.element.type + ">";
+          bus.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           if (is.string(this.element.ref) && Dependency.target) {
               var compInst_1 = Dependency.target.instance;
               bus.on('mounted:refs', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
@@ -831,7 +819,9 @@
           instance = instantiate(vdom);
       }
       var markup = instance.mount('kg');
-      container.innerHTML = markup;
+      var node = createNode(markup);
+      container.parentNode.insertBefore(node, container);
+      container.remove();
       bus.emit('mounted:refs');
       bus.emit('mounted');
       bus.clean('mounted:refs');

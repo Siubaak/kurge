@@ -13,6 +13,7 @@ import bus from '../utils/effect-bus'
 export default class DOMInstance implements Instance {
   id: string
   index: number
+  node: HTMLElement = null
   private element: VDomNode
   private childInstances: Instance[]
 
@@ -23,12 +24,7 @@ export default class DOMInstance implements Instance {
   get key(): string {
     return this.element && this.element.key != null
       ? 'k_' + this.element.key
-      : this.index != null
-        ? '' + this.index
-        : null
-  }
-  get node(): HTMLElement {
-    return getNode(this.id)
+      : this.index != null ? '' + this.index : null
   }
 
   mount(id: string): string {
@@ -79,6 +75,9 @@ export default class DOMInstance implements Instance {
     // tail
     markup += `</${this.element.type}>`
 
+    // save node
+    bus.on('mounted:refs', () => this.node = getNode(this.id))
+  
     // if set ref, return it when mounted
     if (is.string(this.element.ref) && Dependency.target) {
       const compInst = Dependency.target.instance

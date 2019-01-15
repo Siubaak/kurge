@@ -8,35 +8,31 @@
 </head>
 <body>
   <div id="app"></div>
-  <script src="../dist/index.js"></script>
+  <script src="../../dist/index.js"></script>
   <script>
-    const { render, useContext, createElement: h } = Kurge
+    const { render, useState, createElement: h } = Kurge
 
     let id = 1
 
-    const context = useContext([1])
-
-    function list() {
-      return h('ul', {}, context.map((i) => h('li', { key: i }, i)))
-    }
-
     function app() {
+      const origin = useState([])
+      const data = useState([1]) // merge state
       function handleAdd() {
-        context.push(++id)
+        data.push(++id)
       }
       function handleDel() {
-        context.pop()
+        data.pop()
       }
       function handleBottomToTop() {
-        if (context.length) {
-          context.unshift(context.pop())
+        if (data.length) {
+          data.unshift(data.pop())
         }
       }
       return h('div', {},
         h('button', { onClick: handleAdd }, 'add'),
         h('button', { onClick: handleDel }, 'del'),
         h('button', { onClick: handleBottomToTop }, 'bottom to top'),
-        h(list)
+        h('ul', {}, data.map((i) => h('li', { key: i }, i)))
       )
     }
 

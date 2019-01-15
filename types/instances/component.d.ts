@@ -4,6 +4,7 @@ export default class ComponentInstance implements Instance {
     id: string;
     index: number;
     state: any;
+    node: HTMLElement;
     refs: {
         [ref: string]: HTMLElement;
     };
@@ -13,7 +14,6 @@ export default class ComponentInstance implements Instance {
     private renderedInstance;
     constructor(element: Elem);
     readonly key: string;
-    readonly node: HTMLElement;
     mount(id: string): string;
     same(nextElement: Elem): boolean;
     update(nextElement: Elem): void;

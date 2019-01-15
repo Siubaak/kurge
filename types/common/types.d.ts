@@ -2,8 +2,8 @@ export declare type Component = (props: any) => VDomNode;
 export interface Instance {
     id: string;
     index: number;
+    node: HTMLElement;
     readonly key: string;
-    readonly node: HTMLElement;
     mount: (id: string) => string;
     same: (nextElement: Elem) => boolean;
     update: (nextElement: Elem) => void;

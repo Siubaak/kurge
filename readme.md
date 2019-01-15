@@ -21,7 +21,7 @@ You can find getting started and documentation on the [website](https://siubaak.
 
 ## Examples
 
-Several examples [here](https://github.com/Siubaak/kurge/tree/master/examples). You can get started with this first simple one, and it will render a `<p>` tag with text "Hello World!" into a "#app" root container:
+Several [examples here](https://github.com/Siubaak/kurge/tree/master/docs/examples). You can get started with this first simple one, and it will render a `<p>` tag with text "Hello World!" into a "#app" root container:
 
 ```jsx
 function Hello() {

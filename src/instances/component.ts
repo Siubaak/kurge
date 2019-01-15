@@ -13,6 +13,7 @@ export default class ComponentInstance implements Instance {
   id: string
   index: number
   state: any = null
+  node: HTMLElement = null
   refs: { [ref: string]: HTMLElement } = {}
   watcher: Watcher = new Watcher(this)
   private element: VDomNode
@@ -27,12 +28,7 @@ export default class ComponentInstance implements Instance {
   get key(): string {
     return this.element && this.element.key != null
       ? 'k_' + this.element.key
-      : this.index != null
-        ? '' + this.index
-        : null
-  }
-  get node(): HTMLElement {
-    return getNode(this.id)
+      : this.index != null ? '' + this.index : null
   }
 
   mount(id: string): string {
@@ -41,6 +37,7 @@ export default class ComponentInstance implements Instance {
     const markup = this.renderedInstance.mount(this.id = id)
     popTarget()
     this.watcher.clean()
+    bus.on('mounted:refs', () => this.node = getNode(this.id))
     return markup
   }
   same(nextElement: Elem): boolean {
@@ -50,12 +47,10 @@ export default class ComponentInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
-    
     pushTarget(this.watcher)
     reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props))
     popTarget()
     this.watcher.clean()
-
     this.element = nextElement
   }
   unmount() {
