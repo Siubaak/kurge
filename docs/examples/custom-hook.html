@@ -10,17 +10,14 @@
   <div id="app"></div>
   <script src="../../dist/index.js"></script>
   <script>
-    const { render, useState, createElement: h, onBeforeMount, onMounted, onBeforeUpdate, onUpdated } = Kurge
+    const { render, useState, createElement: h, useEffect } = Kurge
 
     let id = 3
 
     function useList() {
       const data = useState([1, 2, 3])
 
-      onBeforeMount(() => console.log('list before-mount'))
-      onMounted(() => console.log('list mounted'))
-      onBeforeUpdate(() => console.log('list before-update'))
-      onUpdated(() => console.log('list updated'))
+      useEffect(() => console.log('list mounted'))
       
       return data
     }

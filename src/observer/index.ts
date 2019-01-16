@@ -30,6 +30,7 @@ export default function observe(data: any) {
     set(target, property, value, receiver) {
       if (hasOwn(target, property) || is.undefined(target[property])) {
         if (value !== target[property]) {
+          // notify watchers
           dep.notify()
         }
       }

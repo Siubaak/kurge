@@ -10,17 +10,15 @@
   <div id="app"></div>
   <script src="../../dist/index.js"></script>
   <script>
-    const { render, useState, createElement: h, onBeforeMount, onMounted, onBeforeUpdate, onUpdated, onBeforeUnMount, onUnMounted } = Kurge
+    const { render, useState, createElement: h, useEffect } = Kurge
 
     let id = 0
 
     function list(props) {
-      onBeforeMount(() => console.log('  list before-mount'))
-      onMounted(() => console.log('  list mounted'))
-      onBeforeUpdate(() => console.log('  list before-update'))
-      onUpdated(() => console.log('  list updated'))
-      onBeforeUnMount(() => console.log('  list before-unmount'))
-      onUnMounted(() => console.log('  list unmounted'))
+      useEffect(() => {
+        console.log('  list render')
+        return () => console.log('  list before-unmount')
+      })
       return h('ul', {}, props.list.map((i) => h('li', { key: i }, i)))
     }
 
@@ -37,10 +35,7 @@
           data.unshift(data.pop())
         }
       }
-      onBeforeMount(() => console.log('app before-mount'))
-      onMounted(() => console.log('app mounted'))
-      onBeforeUpdate(() => console.log('app before-update'))
-      onUpdated(() => console.log('app updated'))
+      useEffect(() => console.log('app render'))
       return h('div', {},
         h('button', { onClick: handleAdd }, 'add'),
         h('button', { onClick: handleDel }, 'del'),

@@ -98,17 +98,17 @@
       return markup.trim();
   }
 
-  var EffectBus = (function () {
-      function EffectBus() {
+  var Emitter = (function () {
+      function Emitter() {
           this.listeners = {};
       }
-      EffectBus.prototype.on = function (event, callback) {
+      Emitter.prototype.on = function (event, callback) {
           if (!this.listeners[event]) {
               this.listeners[event] = [];
           }
           this.listeners[event].push(callback);
       };
-      EffectBus.prototype.emit = function (event, reverse) {
+      Emitter.prototype.emit = function (event, reverse) {
           if (reverse === void 0) { reverse = false; }
           if (this.listeners[event]) {
               if (reverse) {
@@ -121,14 +121,15 @@
                       this.listeners[event][i]();
                   }
               }
+              this.clean(event);
           }
       };
-      EffectBus.prototype.clean = function (event) {
+      Emitter.prototype.clean = function (event) {
           delete this.listeners[event];
       };
-      return EffectBus;
+      return Emitter;
   }());
-  var bus = new EffectBus();
+  var emitter = new Emitter();
 
   var TextInstance = (function () {
       function TextInstance(element) {
@@ -145,7 +146,7 @@
       TextInstance.prototype.mount = function (id) {
           var _this = this;
           this.id = id;
-          bus.on('mounted:refs', function () {
+          emitter.on('mounted:refs', function () {
               var wrapper = getNode(_this.id);
               _this.node = wrapper.firstChild;
               if (_this.node) {
@@ -342,7 +343,7 @@
           var markup = this.renderedInstance.mount(this.id = id);
           popTarget();
           this.watcher.clean();
-          bus.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
+          emitter.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           return markup;
       };
       ComponentInstance.prototype.same = function (nextElement) {
@@ -359,9 +360,10 @@
           this.element = nextElement;
       };
       ComponentInstance.prototype.unmount = function () {
-          bus.emit("before-unmount:" + this.id);
+          emitter.emit("unmount:" + this.id);
           this.renderedInstance.unmount();
           this.watcher.clean();
+          delete this.id;
           delete this.index;
           delete this.state;
           delete this.node;
@@ -370,12 +372,6 @@
           delete this.element;
           delete this.component;
           delete this.renderedInstance;
-          bus.emit("unmounted:" + this.id);
-          bus.clean("before-update:" + this.id);
-          bus.clean("updated:" + this.id);
-          bus.clean("before-unmount:" + this.id);
-          bus.clean("unmounted:" + this.id);
-          delete this.id;
       };
       return ComponentInstance;
   }());
@@ -428,12 +424,9 @@
               var _loop_1 = function () {
                   var _a = _this.dirtyInstanceSet.shift(), instance = _a.instance, element = _a.element;
                   if (instance.id) {
-                      if (instance instanceof ComponentInstance) {
-                          bus.emit("before-update:" + instance.id);
-                      }
                       instance.update(element);
                       if (instance instanceof ComponentInstance) {
-                          bus.on('updated', function () { return bus.emit("updated:" + instance.id); });
+                          emitter.on('updated', function () { return emitter.emit("updated:" + instance.id); });
                       }
                   }
               };
@@ -441,8 +434,7 @@
                   _loop_1();
               }
               _this.isBatchUpdating = false;
-              bus.emit('updated', true);
-              bus.clean('updated');
+              emitter.emit('updated', true);
           });
       };
       return Reconciler;
@@ -569,10 +561,8 @@
                   var node = createNode(markup);
                   var beforeNode = container.children[beforeIndex];
                   container.insertBefore(node, beforeNode);
-                  bus.emit('mounted:refs');
-                  bus.emit('mounted');
-                  bus.clean('mounted:refs');
-                  bus.clean('mounted');
+                  emitter.emit('mounted:refs');
+                  emitter.emit('mounted');
               }
               else {
                   var node = op.inst.node;
@@ -673,10 +663,10 @@
               _this.childInstances.push(instance);
           });
           markup += "</" + this.element.type + ">";
-          bus.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
+          emitter.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           if (is.string(this.element.ref) && Dependency.target) {
               var compInst_1 = Dependency.target.instance;
-              bus.on('mounted:refs', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
+              emitter.on('mounted:refs', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
           }
           return markup;
       };
@@ -827,10 +817,8 @@
       var node = createNode(markup);
       container.parentNode.insertBefore(node, container);
       container.remove();
-      bus.emit('mounted:refs');
-      bus.emit('mounted');
-      bus.clean('mounted:refs');
-      bus.clean('mounted');
+      emitter.emit('mounted:refs');
+      emitter.emit('mounted');
   }
 
   function observe(data) {
@@ -876,7 +864,7 @@
 
   function useState(state) {
       if (!Dependency.target) {
-          throw new Error('please invoke useState at top level in a component');
+          throw new Error('please call useState at top level in a component');
       }
       else {
           var instance = Dependency.target.instance;
@@ -894,7 +882,7 @@
 
   function useContext(ctx) {
       if (Dependency.target) {
-          throw new Error('please invoke useContext at top level outside all components');
+          throw new Error('please call useContext at top level outside all components');
       }
       else {
           return observe(ctx);
@@ -903,81 +891,35 @@
 
   function useRefs() {
       if (!Dependency.target) {
-          throw new Error('please invoke useRefs at top level in a component');
+          throw new Error('please call useRefs at top level in a component');
       }
       else {
           return Dependency.target.instance.refs;
       }
   }
 
-  function onBeforeMount(callback) {
+  function useEffect(effect) {
       if (!Dependency.target) {
-          throw new Error('please invoke onBeforeMount at top level in a component');
-      }
-      else {
-          var instance = Dependency.target.instance;
-          if (!instance.id) {
-              callback();
-          }
-      }
-  }
-
-  function onMounted(callback) {
-      if (!Dependency.target) {
-          throw new Error('please invoke onMounted at top level in a component');
-      }
-      else {
-          var instance = Dependency.target.instance;
-          if (!instance.id) {
-              bus.on('mounted', callback);
-          }
-      }
-  }
-
-  function onBeforeUpdate(callback) {
-      if (!Dependency.target) {
-          throw new Error('please invoke onBeforeUpdate at top level in a component');
+          throw new Error('please call useEffect at top level in a component');
       }
       else {
           var instance_1 = Dependency.target.instance;
-          if (!instance_1.id) {
-              bus.on('mounted', function () { return bus.on("before-update:" + instance_1.id, callback); });
+          if (instance_1.id) {
+              emitter.on("updated:" + instance_1.id, function () {
+                  var cleanup = effect();
+                  emitter.clean("unmount:" + instance_1.id);
+                  if (cleanup && is.function(cleanup)) {
+                      emitter.on("unmount:" + instance_1.id, cleanup);
+                  }
+              });
           }
-      }
-  }
-
-  function onUpdated(callback) {
-      if (!Dependency.target) {
-          throw new Error('please invoke onUpdated at top level in a component');
-      }
-      else {
-          var instance_1 = Dependency.target.instance;
-          if (!instance_1.id) {
-              bus.on('mounted', function () { return bus.on("updated:" + instance_1.id, callback); });
-          }
-      }
-  }
-
-  function onBeforeUnMount(callback) {
-      if (!Dependency.target) {
-          throw new Error('please invoke onBeforeUnMount at top level in a component');
-      }
-      else {
-          var instance_1 = Dependency.target.instance;
-          if (!instance_1.id) {
-              bus.on('mounted', function () { return bus.on("before-unmount:" + instance_1.id, callback); });
-          }
-      }
-  }
-
-  function onUnMounted(callback) {
-      if (!Dependency.target) {
-          throw new Error('please invoke onUnMounted at top level in a component');
-      }
-      else {
-          var instance_1 = Dependency.target.instance;
-          if (!instance_1.id) {
-              bus.on('mounted', function () { return bus.on("unmounted:" + instance_1.id, callback); });
+          else {
+              emitter.on('mounted', function () {
+                  var cleanup = effect();
+                  if (cleanup && is.function(cleanup)) {
+                      emitter.on("unmount:" + instance_1.id, cleanup);
+                  }
+              });
           }
       }
   }
@@ -988,12 +930,7 @@
       useState: useState,
       useContext: useContext,
       useRefs: useRefs,
-      onBeforeMount: onBeforeMount,
-      onMounted: onMounted,
-      onBeforeUpdate: onBeforeUpdate,
-      onUpdated: onUpdated,
-      onBeforeUnMount: onBeforeUnMount,
-      onUnMounted: onUnMounted
+      useEffect: useEffect
   };
 
   return Kurge;

@@ -5,7 +5,7 @@ import TextInstance from '../instances/text'
 import DOMInstance from '../instances/dom'
 import ComponentInstance from '../instances/component'
 import createElement from '../vdom/create'
-import bus from '../utils/effect-bus'
+import emitter from '../utils/emitter'
 import { createNode } from '../utils/dom'
 
 // instantiate vdom element 
@@ -49,8 +49,6 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   const node = createNode(markup)
   container.parentNode.insertBefore(node, container)
   container.remove()
-  bus.emit('mounted:refs')
-  bus.emit('mounted')
-  bus.clean('mounted:refs')
-  bus.clean('mounted')
+  emitter.emit('mounted:refs')
+  emitter.emit('mounted')
 }

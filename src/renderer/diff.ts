@@ -3,7 +3,7 @@ import { instantiate } from '../renderer/index'
 import { getNode, createNode } from '../utils/dom'
 import reconciler from './reconciler'
 import ComponentInstance from '../instances/component'
-import bus from '../utils/effect-bus'
+import emitter from '../utils/emitter'
 
 // diff two array, and return the least operations to modify
 // use both frontward diff and backward diff, and return the less modify operation of them
@@ -156,10 +156,8 @@ export function patch(parentId: string, patches: Patches): void {
         const beforeNode = container.children[beforeIndex]
         // insertBefore will degenerate to be appendChild if beforeNode is undefined
         container.insertBefore(node, beforeNode)
-        bus.emit('mounted:refs')
-        bus.emit('mounted')
-        bus.clean('mounted:refs')
-        bus.clean('mounted')
+        emitter.emit('mounted:refs')
+        emitter.emit('mounted')
       } else {
         // move, and getting the node needed to be moved is enough
         const node = op.inst.node

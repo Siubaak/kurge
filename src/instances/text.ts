@@ -2,7 +2,7 @@ import { is } from '../utils/index'
 import { getNode } from '../utils/dom'
 import { DATA_ID } from '../common/constants'
 import { Elem, Instance } from '../common/types'
-import bus from '../utils/effect-bus'
+import emitter from '../utils/emitter'
 
 // empty node or text node
 export default class TextInstance implements Instance {
@@ -23,7 +23,7 @@ export default class TextInstance implements Instance {
     this.id = id
 
     // save node, remove span wrapper
-    bus.on('mounted:refs', () => {
+    emitter.on('mounted:refs', () => {
       const wrapper = getNode(this.id)
       this.node = wrapper.firstChild as HTMLElement
       if (this.node) {

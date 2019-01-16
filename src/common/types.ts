@@ -1,6 +1,9 @@
 // function component type
 export type Component = (props: any) => VDomNode
 
+// effect type
+export type Effect = () => void | (() => void)
+
 // instance type
 export interface Instance {
   id: string

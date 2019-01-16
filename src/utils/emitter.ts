@@ -1,4 +1,4 @@
-class EffectBus {
+class Emitter {
   private listeners: { [event: string]: (() => void)[] } = {}
 
   on(event: string, callback: () => void) {
@@ -19,6 +19,7 @@ class EffectBus {
           this.listeners[event][i]()
         }
       }
+      this.clean(event)
     }
   }
 
@@ -27,4 +28,4 @@ class EffectBus {
   }
 }
 
-export default new EffectBus()
+export default new Emitter()

@@ -1,5 +1,5 @@
 import { is } from '../utils/index'
-import bus from '../utils/effect-bus'
+import emitter from '../utils/emitter'
 import { getNode } from '../utils/dom'
 import { instantiate } from '../renderer/index'
 import reconciler from '../renderer/reconciler'
@@ -38,7 +38,7 @@ export default class ComponentInstance implements Instance {
     popTarget()
     this.watcher.clean()
     // save root node
-    bus.on('mounted:refs', () => this.node = getNode(this.id))
+    emitter.on('mounted:refs', () => this.node = getNode(this.id))
     return markup
   }
   same(nextElement: Elem): boolean {
@@ -55,9 +55,10 @@ export default class ComponentInstance implements Instance {
     this.element = nextElement
   }
   unmount() {
-    bus.emit(`before-unmount:${this.id}`)
+    emitter.emit(`unmount:${this.id}`)
     this.renderedInstance.unmount()
     this.watcher.clean()
+    delete this.id
     delete this.index
     delete this.state
     delete this.node
@@ -66,11 +67,5 @@ export default class ComponentInstance implements Instance {
     delete this.element
     delete this.component
     delete this.renderedInstance
-    bus.emit(`unmounted:${this.id}`)
-    bus.clean(`before-update:${this.id}`)
-    bus.clean(`updated:${this.id}`)
-    bus.clean(`before-unmount:${this.id}`)
-    bus.clean(`unmounted:${this.id}`)
-    delete this.id
   }
 }
