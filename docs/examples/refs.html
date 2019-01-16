@@ -10,13 +10,13 @@
   <div id="app"></div>
   <script src="../../dist/index.js"></script>
   <script>
-    const { render, useRefs, createElement: h, onMounted } = Kurge
+    const { render, useRefs, createElement: h, useEffect } = Kurge
 
     let id = 1
 
     function app() {
       const refs = useRefs()
-      onMounted(() => {
+      useEffect(() => {
         refs.field.focus()
         console.log('auto focus', refs.field)
       })
