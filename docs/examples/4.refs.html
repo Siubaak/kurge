@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Kurge</title>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="../../dist/index.js"></script>
+  <script>
+    const { render, useRefs, createElement: h, useEffect } = Kurge
+
+    function app() {
+      const refs = useRefs()
+      useEffect(() => refs.field.focus())
+      return h('input', { ref: 'field' })
+    }
+
+    render(h(app), document.getElementById('app'))
+  </script>
+</body>
+</html>

@@ -30,17 +30,8 @@
       }
   }
   var nextTick = requestAnimationFrame;
-  function assign(target, object) {
-      for (var key in object) {
-          if (hasOwn(object, key)) {
-              target[key] = object[key];
-          }
-      }
-      return target;
-  }
 
   var DATA_ID = 'data-kgid';
-  var PROXY_TARGET = Math.random().toString(36).substring(2);
   var RESERVED_PROPS = { key: true, ref: true };
   var CUT_ON_REGEX = /^on/;
   var eventHandlers = Object.keys(window || {}).filter(function (key) { return CUT_ON_REGEX.test(key); });
@@ -149,9 +140,10 @@
           emitter.on('mounted:refs', function () {
               var wrapper = getNode(_this.id);
               _this.node = wrapper.firstChild;
-              if (_this.node) {
-                  wrapper.parentNode.insertBefore(_this.node, wrapper);
+              if (!_this.node) {
+                  _this.node = createNode('');
               }
+              wrapper.parentNode.insertBefore(_this.node, wrapper);
               wrapper.remove();
           });
           return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
@@ -160,9 +152,7 @@
           return is.number(nextElement) || is.string(nextElement);
       };
       TextInstance.prototype.update = function (nextElement) {
-          nextElement = is.undefined(nextElement) || is.null(nextElement)
-              ? this.element
-              : '' + nextElement;
+          nextElement = nextElement == null ? this.element : '' + nextElement;
           if (this.element !== nextElement) {
               this.element = nextElement;
               this.node.textContent = this.element;
@@ -320,10 +310,13 @@
 
   var ComponentInstance = (function () {
       function ComponentInstance(element) {
-          this.state = null;
           this.node = null;
           this.refs = {};
           this.watcher = new Watcher(this);
+          this.guards = [];
+          this.guardLeft = 0;
+          this.states = [];
+          this.stateId = 0;
           this.element = element;
           this.component = this.element.type;
       }
@@ -332,6 +325,23 @@
               return this.element && this.element.key != null
                   ? 'k_' + this.element.key
                   : this.index != null ? '' + this.index : null;
+          },
+          enumerable: true,
+          configurable: true
+      });
+      Object.defineProperty(ComponentInstance.prototype, "currentState", {
+          get: function () {
+              return this.states[this.stateId++];
+          },
+          enumerable: true,
+          configurable: true
+      });
+      Object.defineProperty(ComponentInstance.prototype, "prevGuard", {
+          get: function () {
+              if (this.guardLeft) {
+                  this.guardLeft--;
+                  return this.guards.shift();
+              }
           },
           enumerable: true,
           configurable: true
@@ -353,6 +363,8 @@
       };
       ComponentInstance.prototype.update = function (nextElement) {
           nextElement = nextElement == null ? this.element : nextElement;
+          this.stateId = 0;
+          this.guardLeft = this.guards.length;
           pushTarget(this.watcher);
           reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props));
           popTarget();
@@ -365,7 +377,10 @@
           this.watcher.clean();
           delete this.id;
           delete this.index;
-          delete this.state;
+          delete this.guards;
+          delete this.guardLeft;
+          delete this.states;
+          delete this.stateId;
           delete this.node;
           delete this.refs;
           delete this.watcher;
@@ -676,9 +691,7 @@
               && nextElement.key === this.element.key;
       };
       DOMInstance.prototype.update = function (nextElement) {
-          nextElement = nextElement == null
-              ? this.element
-              : nextElement;
+          nextElement = nextElement == null ? this.element : nextElement;
           var node = this.node;
           var prevProps = this.element.props;
           var nextProps = nextElement.props;
@@ -803,7 +816,7 @@
       if (!is.object(vdom)) {
           throw new Error('please offer a legal VDOM node');
       }
-      if (!container) {
+      else if (!container) {
           throw new Error('a root DOM node is needed to mount the app');
       }
       var instance = null;
@@ -835,9 +848,6 @@
       var dep = new Dependency();
       return new Proxy(data, {
           get: function (target, property, receiver) {
-              if (property === PROXY_TARGET) {
-                  return target;
-              }
               if (hasOwn(target, property)) {
                   if (Dependency.target) {
                       dep.collect();
@@ -863,25 +873,32 @@
   }
 
   function useState(state) {
-      if (!Dependency.target) {
+      if (!is.object(state) && !is.array(state)) {
+          throw new Error('useState only accepts object or array');
+      }
+      else if (!Dependency.target) {
           throw new Error('please call useState at top level in a component');
       }
       else {
           var instance = Dependency.target.instance;
           if (!instance.id) {
-              if (instance.state) {
-                  assign(instance.state[PROXY_TARGET], observe(state)[PROXY_TARGET]);
-              }
-              else {
-                  instance.state = observe(state);
-              }
+              instance.states.push(observe(state));
           }
-          return instance.state;
+          var currentState = instance.currentState;
+          if (!currentState) {
+              throw new Error('unmatch any states. please don\'t call useState in if/loop statement');
+          }
+          else {
+              return currentState;
+          }
       }
   }
 
   function useContext(ctx) {
-      if (Dependency.target) {
+      if (!is.object(ctx) && !is.array(ctx)) {
+          throw new Error('useContext only accepts object or array');
+      }
+      else if (Dependency.target) {
           throw new Error('please call useContext at top level outside all components');
       }
       else {
@@ -898,20 +915,41 @@
       }
   }
 
-  function useEffect(effect) {
-      if (!Dependency.target) {
+  function useEffect(effect, guard) {
+      if (guard === void 0) { guard = null; }
+      if (!is.null(guard) && !is.array(guard)) {
+          throw new Error('the second argument of useEffect only accepts array');
+      }
+      else if (!Dependency.target) {
           throw new Error('please call useEffect at top level in a component');
       }
       else {
           var instance_1 = Dependency.target.instance;
           if (instance_1.id) {
-              emitter.on("updated:" + instance_1.id, function () {
-                  var cleanup = effect();
-                  emitter.clean("unmount:" + instance_1.id);
-                  if (cleanup && is.function(cleanup)) {
-                      emitter.on("unmount:" + instance_1.id, cleanup);
+              var prevGuard = instance_1.prevGuard;
+              if (is.undefined(prevGuard)) {
+                  throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement');
+              }
+              var shouldCall = false;
+              if (is.array(guard) && is.array(prevGuard) && guard.length === prevGuard.length) {
+                  for (var i = 0; i < guard.length; i++) {
+                      if (guard[i] !== prevGuard[i]) {
+                          shouldCall = true;
+                      }
                   }
-              });
+              }
+              else {
+                  shouldCall = true;
+              }
+              if (shouldCall) {
+                  emitter.on("updated:" + instance_1.id, function () {
+                      emitter.clean("unmount:" + instance_1.id);
+                      var cleanup = effect();
+                      if (cleanup && is.function(cleanup)) {
+                          emitter.on("unmount:" + instance_1.id, cleanup);
+                      }
+                  });
+              }
           }
           else {
               emitter.on('mounted', function () {
@@ -921,6 +959,7 @@
                   }
               });
           }
+          instance_1.guards.push(guard);
       }
   }
 

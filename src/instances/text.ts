@@ -1,5 +1,5 @@
 import { is } from '../utils/index'
-import { getNode } from '../utils/dom'
+import { getNode, createNode } from '../utils/dom'
 import { DATA_ID } from '../common/constants'
 import { Elem, Instance } from '../common/types'
 import emitter from '../utils/emitter'
@@ -8,7 +8,7 @@ import emitter from '../utils/emitter'
 export default class TextInstance implements Instance {
   id: string
   index: number
-  node: HTMLElement = null
+  node: Text = null
   private element: number | string
 
   constructor(element: Elem) {
@@ -25,10 +25,11 @@ export default class TextInstance implements Instance {
     // save node, remove span wrapper
     emitter.on('mounted:refs', () => {
       const wrapper = getNode(this.id)
-      this.node = wrapper.firstChild as HTMLElement
-      if (this.node) {
-        wrapper.parentNode.insertBefore(this.node, wrapper)
+      this.node = wrapper.firstChild as Text
+      if (!this.node) {
+        this.node = createNode('') as Text
       }
+      wrapper.parentNode.insertBefore(this.node, wrapper)
       wrapper.remove()
     })
 
@@ -38,10 +39,7 @@ export default class TextInstance implements Instance {
     return is.number(nextElement) || is.string(nextElement)
   }
   update(nextElement: Elem): void {
-    nextElement = is.undefined(nextElement) || is.null(nextElement)
-      ? this.element
-      : '' + (nextElement as (number | string))
-    
+    nextElement = nextElement == null ? this.element : '' + (nextElement as (number | string))
     if (this.element !== nextElement) {
       this.element = nextElement
       this.node.textContent = this.element as string

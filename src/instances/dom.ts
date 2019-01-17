@@ -92,9 +92,7 @@ export default class DOMInstance implements Instance {
       && (nextElement as VDomNode).key === this.element.key
   }
   update(nextElement: Elem): void {
-    nextElement = nextElement == null
-      ? this.element
-      : (nextElement as VDomNode)
+    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
 
     const node = this.node
     const prevProps = this.element.props

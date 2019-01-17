@@ -1,5 +1,4 @@
 export declare const DATA_ID: string;
-export declare const PROXY_TARGET: string;
 export declare const RESERVED_PROPS: {
     [prop: string]: boolean;
 };

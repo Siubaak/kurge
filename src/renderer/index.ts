@@ -35,8 +35,7 @@ export function instantiate(element: Elem) {
 export default function render(vdom: VDomNode, container: HTMLElement) {
   if (!is.object(vdom)) {
     throw new Error('please offer a legal VDOM node')
-  }
-  if (!container) {
+  } else if (!container) {
     throw new Error('a root DOM node is needed to mount the app')
   }
   let instance: Instance = null

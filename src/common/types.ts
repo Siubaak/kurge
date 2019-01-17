@@ -8,7 +8,7 @@ export type Effect = () => void | (() => void)
 export interface Instance {
   id: string
   index: number
-  node: HTMLElement
+  node: Text | HTMLElement
 
   readonly key: string
   

@@ -2,7 +2,7 @@ import { Elem, Instance } from '../common/types';
 export default class TextInstance implements Instance {
     id: string;
     index: number;
-    node: HTMLElement;
+    node: Text;
     private element;
     constructor(element: Elem);
     readonly key: string;

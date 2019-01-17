@@ -10,17 +10,15 @@
   <div id="app"></div>
   <script src="../../dist/index.js"></script>
   <script>
-    const { render, useRefs, createElement: h, useEffect } = Kurge
+    const { render, useContext, createElement: h } = Kurge
 
-    let id = 1
+    const context = useContext({ count: 0 })
 
     function app() {
-      const refs = useRefs()
-      useEffect(() => {
-        refs.field.focus()
-        console.log('auto focus', refs.field)
-      })
-      return h('input', { ref: 'field' })
+      return h('div', {},
+        h('p', null, 'You clicked ' + context.count + ' times'),
+        h('button', { onClick: () => context.count++ }, 'Click me')
+      )
     }
 
     render(h(app), document.getElementById('app'))

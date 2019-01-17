@@ -3,31 +3,53 @@ import { Effect } from '../common/types'
 import emitter from '../utils/emitter'
 import { is } from '../utils'
 
-export default function useEffect(effect: Effect) {
-  if (!Dependency.target) {
+export default function useEffect(effect: Effect, guard: any[] = null) {
+  if (!is.null(guard) && !is.array(guard)) {
+    throw new Error('the second argument of useEffect only accepts array')
+  } else if (!Dependency.target) {
     throw new Error('please call useEffect at top level in a component')
   } else {
     const instance = Dependency.target.instance
     if (instance.id) {
       // if the component has been mounted, it has an id
-      // invoke effect when updated, and remove cleanup then add it again
-      emitter.on(`updated:${instance.id}`, () => {
-        const cleanup = effect()
-        emitter.clean(`unmount:${instance.id}`)
-        if (cleanup && is.function(cleanup)) {
-          emitter.on(`unmount:${instance.id}`, cleanup)
+      const prevGuard = instance.prevGuard
+
+      if (is.undefined(prevGuard)) {
+        throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement')
+      }
+
+      let shouldCall = false
+      if (is.array(guard) && is.array(prevGuard) && guard.length === prevGuard.length) {
+        for (let i = 0; i < guard.length; i++) {
+          if (guard[i] !== prevGuard[i]) {
+            shouldCall = true
+          }
         }
-      })
+      } else {
+        shouldCall = true
+      }
+
+      if (shouldCall) {
+        emitter.on(`updated:${instance.id}`, () => {
+          // invoke effect when updated, and remove cleanup then add it again
+          emitter.clean(`unmount:${instance.id}`)
+          const cleanup = effect()
+          if (cleanup && is.function(cleanup)) {
+            emitter.on(`unmount:${instance.id}`, cleanup)
+          }
+        })
+      }
     } else {
       // if the component is mounting, it won't have an id
-      // invoke effect when mounted, then add it again
-      // no needs to remove cleanup first because it's mounting
       emitter.on('mounted', () => {
+        // invoke effect when mounted, then add it again
+        // no needs to remove cleanup first because it's mounting
         const cleanup = effect()
         if (cleanup && is.function(cleanup)) {
           emitter.on(`unmount:${instance.id}`, cleanup)
         }
       })
     }
+    instance.guards.push(guard)
   }
 }

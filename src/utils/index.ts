@@ -34,13 +34,3 @@ export function swap(a: any, b: any) { [a, b] = [b, a] }
 
 // push the callback to next frame event loop
 export const nextTick = requestAnimationFrame
-
-// ES6 Object.assign polyfill for two objects
-export function assign(target: any, object: any): any {
-  for (const key in object) {
-    if (hasOwn(object, key)) {
-      target[key] = object[key]
-    }
-  }
-  return target
-}

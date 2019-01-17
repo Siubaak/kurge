@@ -14,4 +14,3 @@ export declare function hasOwn(object: any, property: string | number | symbol):
 export declare function delArrItem(arr: any[], item: any): any[] | void;
 export declare function swap(a: any, b: any): void;
 export declare const nextTick: typeof requestAnimationFrame;
-export declare function assign(target: any, object: any): any;

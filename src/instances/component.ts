@@ -12,10 +12,13 @@ import { pushTarget, popTarget } from '../observer/dependeny'
 export default class ComponentInstance implements Instance {
   id: string
   index: number
-  state: any = null
   node: HTMLElement = null
   refs: { [ref: string]: HTMLElement } = {}
   watcher: Watcher = new Watcher(this)
+  guards: any[] = []
+  guardLeft: number = 0
+  states: any[] = []
+  private stateId: number = 0
   private element: VDomNode
   private component: Component
   private renderedInstance: Instance
@@ -31,14 +34,26 @@ export default class ComponentInstance implements Instance {
       : this.index != null ? '' + this.index : null
   }
 
+  get currentState(): any {
+    return this.states[this.stateId++]
+  }
+  get prevGuard(): any {
+    if (this.guardLeft) {
+      this.guardLeft--
+      return this.guards.shift()
+    }
+  }
+
   mount(id: string): string {
     pushTarget(this.watcher)
     this.renderedInstance = instantiate(this.component(this.element.props))
     const markup = this.renderedInstance.mount(this.id = id)
     popTarget()
     this.watcher.clean()
+  
     // save root node
     emitter.on('mounted:refs', () => this.node = getNode(this.id))
+  
     return markup
   }
   same(nextElement: Elem): boolean {
@@ -48,10 +63,15 @@ export default class ComponentInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+
+    this.stateId = 0
+    this.guardLeft = this.guards.length
+  
     pushTarget(this.watcher)
     reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props))
     popTarget()
     this.watcher.clean()
+
     this.element = nextElement
   }
   unmount() {
@@ -60,7 +80,10 @@ export default class ComponentInstance implements Instance {
     this.watcher.clean()
     delete this.id
     delete this.index
-    delete this.state
+    delete this.guards
+    delete this.guardLeft
+    delete this.states
+    delete this.stateId
     delete this.node
     delete this.refs
     delete this.watcher

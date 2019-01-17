@@ -1,6 +1,5 @@
 import { is, hasOwn } from '../utils/index'
 import Dependency from './dependeny'
-import { PROXY_TARGET } from '../common/constants'
 
 export default function observe(data: any) {
   if (!is.object(data) && !is.array(data)) {
@@ -16,9 +15,6 @@ export default function observe(data: any) {
   const dep: Dependency = new Dependency()
   return new Proxy(data, {
     get(target, property, receiver) {
-      if (property === PROXY_TARGET) {
-        return target
-      }
       if (hasOwn(target, property)) {
         // collect dependencies
         if (Dependency.target) {
