@@ -2,7 +2,7 @@
 
 Kurge is a reactive function component based JavaScript UI binding library.
 
-* **Hook-Dominated:** All kinds of powerful hooks are available, to keep your state free of all stuffs, making it possible to seperate state with view and logic with component.
+* **Hook-Dominated:** All kinds of powerful hooks are available, to keep your states and effects free of all stuffs, making it possible to seperate state with view and logic with component.
 * **Function-Based:** No class components, no object components, and all components are organized by function. Build encapsulated function components to compose your view making UIs.
 
 ## Installation
