@@ -1,5 +1,5 @@
-import render from './renderer/index';
-import createElement from './vdom/create';
+import render from './renderer';
+import createElement from './vdom';
 import useState from './hooks/state';
 import useContext from './hooks/context';
 import useRefs from './hooks/refs';

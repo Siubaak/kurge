@@ -1,7 +1,7 @@
-import { is } from '../utils/index'
+import { is } from '../utils'
 import emitter from '../utils/emitter'
 import { getNode } from '../utils/dom'
-import { instantiate } from '../renderer/index'
+import { instantiate } from '../renderer'
 import reconciler from '../renderer/reconciler'
 import { VDomNode, Elem, Component, Instance } from '../common/types'
 

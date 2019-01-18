@@ -1,5 +1,5 @@
 import { Elem, VDomNode, Instance, Patches, PatchOp } from '../common/types'
-import { instantiate } from '../renderer/index'
+import { instantiate } from '../renderer'
 import { getNode, createNode } from '../utils/dom'
 import reconciler from './reconciler'
 import ComponentInstance from '../instances/component'

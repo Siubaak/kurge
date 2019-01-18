@@ -1,6 +1,6 @@
-import { is } from '../utils/index'
+import { is } from '../utils'
 import { diff, patch } from '../renderer/diff'
-import { instantiate } from '../renderer/index'
+import { instantiate } from '../renderer'
 import reconciler from '../renderer/reconciler'
 import { DATA_ID, SUPPORTED_LISTENERS } from '../common/constants'
 import { VDomNode, Elem, Patches, Instance } from '../common/types'

@@ -1,4 +1,4 @@
-import observe from '../observer/index'
+import observe from '../observer'
 import Dependency from '../observer/dependeny'
 import { is } from '../utils'
 

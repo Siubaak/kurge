@@ -1,6 +1,6 @@
 import Heap from '../utils/heap'
 import emitter from '../utils/emitter'
-import { nextTick } from '../utils/index'
+import { nextTick } from '../utils'
 import { Elem, Instance, DirtyInstance } from '../common/types'
 import ComponentInstance from '../instances/component'
 

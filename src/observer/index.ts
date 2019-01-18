@@ -1,4 +1,4 @@
-import { is, hasOwn } from '../utils/index'
+import { is, hasOwn } from '../utils'
 import Dependency from './dependeny'
 
 export default function observe(data: any) {

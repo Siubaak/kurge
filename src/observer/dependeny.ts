@@ -1,5 +1,5 @@
 import Watcher from './watcher'
-import { delArrItem } from '../utils/index'
+import { delArrItem } from '../utils'
 
 let uid: number = 0
 

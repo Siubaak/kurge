@@ -1,10 +1,10 @@
 import { Elem, VDomNode } from '../common/types'
 import { Instance } from '../common/types'
-import { is } from '../utils/index'
+import { is } from '../utils'
 import TextInstance from '../instances/text'
 import DOMInstance from '../instances/dom'
 import ComponentInstance from '../instances/component'
-import createElement from '../vdom/create'
+import createElement from '../vdom'
 import emitter from '../utils/emitter'
 import { createNode } from '../utils/dom'
 

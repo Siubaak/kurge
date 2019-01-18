@@ -1,4 +1,4 @@
-import { is } from '../utils/index'
+import { is } from '../utils'
 import { getNode, createNode } from '../utils/dom'
 import { DATA_ID } from '../common/constants'
 import { Elem, Instance } from '../common/types'
