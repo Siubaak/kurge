@@ -8,8 +8,7 @@ export default function createElement(
   config?: any,
   ...children: (Elem | Elem[])[]
 ): VDomNode {
-  children = children.length ? [].concat(...children) : ['']
-  const props: Props = { children: children as Elem[] }
+  const props: Props = { children: [].concat(...children) }
   let key: string = null
   let ref: string = null
   if (config) {

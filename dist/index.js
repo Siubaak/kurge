@@ -740,8 +740,7 @@
       for (var _i = 2; _i < arguments.length; _i++) {
           children[_i - 2] = arguments[_i];
       }
-      children = children.length ? [].concat.apply([], children) : [''];
-      var props = { children: children };
+      var props = { children: [].concat.apply([], children) };
       var key = null;
       var ref = null;
       if (config) {
