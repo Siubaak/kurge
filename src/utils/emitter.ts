@@ -8,16 +8,10 @@ class Emitter {
     this.listeners[event].push(callback)
   }
 
-  emit(event: string, reverse: boolean = false) {
+  emit(event: string) {
     if (this.listeners[event]) {
-      if (reverse) {
-        for (let i = this.listeners[event].length - 1; i > -1; i--) {
-          this.listeners[event][i]()
-        }
-      } else {
-        for (let i = 0; i < this.listeners[event].length; i++) {
-          this.listeners[event][i]()
-        }
+      for (let i = 0; i < this.listeners[event].length; i++) {
+        this.listeners[event][i]()
       }
       this.clean(event)
     }

@@ -33,16 +33,10 @@
 
   var DATA_ID = 'data-kgid';
   var RESERVED_PROPS = { key: true, ref: true };
-  var CUT_ON_REGEX = /^on/;
-  var eventHandlers = Object.keys(window || {}).filter(function (key) { return CUT_ON_REGEX.test(key); });
-  var SUPPORTED_EVENTS = eventHandlers.map(function (key) { return key.replace(CUT_ON_REGEX, ''); });
+  var eventHandlers = Object.keys(window || {}).filter(function (key) { return /^on/.test(key); });
   var SUPPORTED_LISTENERS = {};
   eventHandlers.forEach(function (listener) { return SUPPORTED_LISTENERS[listener] = true; });
 
-  var regex = /[:]\w+$/;
-  function getParentId(childId) {
-      return regex.test(childId) && childId.replace(regex, '');
-  }
   function getNode(id) {
       return document.querySelector("[" + DATA_ID + "=\"" + id + "\"]");
   }
@@ -60,10 +54,7 @@
       var markup = '';
       if (className == null) ;
       else if (typeof className === 'object') {
-          markup +=
-              Object.keys(className)
-                  .filter(function (cls) { return className[cls]; })
-                  .join(' ');
+          markup += Object.keys(className).filter(function (cls) { return className[cls]; }).join(' ');
       }
       else if (Array.isArray(className)) {
           markup += className.join(' ');
@@ -99,18 +90,10 @@
           }
           this.listeners[event].push(callback);
       };
-      Emitter.prototype.emit = function (event, reverse) {
-          if (reverse === void 0) { reverse = false; }
+      Emitter.prototype.emit = function (event) {
           if (this.listeners[event]) {
-              if (reverse) {
-                  for (var i = this.listeners[event].length - 1; i > -1; i--) {
-                      this.listeners[event][i]();
-                  }
-              }
-              else {
-                  for (var i = 0; i < this.listeners[event].length; i++) {
-                      this.listeners[event][i]();
-                  }
+              for (var i = 0; i < this.listeners[event].length; i++) {
+                  this.listeners[event][i]();
               }
               this.clean(event);
           }
@@ -137,14 +120,16 @@
       TextInstance.prototype.mount = function (id) {
           var _this = this;
           this.id = id;
-          emitter.on('mounted:refs', function () {
+          emitter.on('loaded', function () {
               var wrapper = getNode(_this.id);
-              _this.node = wrapper.firstChild;
-              if (!_this.node) {
-                  _this.node = createNode('');
+              if (wrapper) {
+                  _this.node = wrapper.firstChild;
+                  if (!_this.node) {
+                      _this.node = createNode('');
+                  }
+                  wrapper.parentNode.insertBefore(_this.node, wrapper);
+                  wrapper.remove();
               }
-              wrapper.parentNode.insertBefore(_this.node, wrapper);
-              wrapper.remove();
           });
           return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
       };
@@ -153,13 +138,19 @@
       };
       TextInstance.prototype.update = function (nextElement) {
           nextElement = nextElement == null ? this.element : '' + nextElement;
+          if (!this.node) {
+              this.element = nextElement;
+              return;
+          }
           if (this.element !== nextElement) {
               this.element = nextElement;
               this.node.textContent = this.element;
           }
       };
       TextInstance.prototype.unmount = function () {
-          this.node.remove();
+          if (this.node) {
+              this.node.remove();
+          }
           delete this.id;
           delete this.node;
           delete this.index;
@@ -310,7 +301,6 @@
 
   var ComponentInstance = (function () {
       function ComponentInstance(element) {
-          this.node = null;
           this.refs = {};
           this.watcher = new Watcher(this);
           this.guards = [];
@@ -325,6 +315,13 @@
               return this.element && this.element.key != null
                   ? 'k_' + this.element.key
                   : this.index != null ? '' + this.index : null;
+          },
+          enumerable: true,
+          configurable: true
+      });
+      Object.defineProperty(ComponentInstance.prototype, "node", {
+          get: function () {
+              return this.renderedInstance ? this.renderedInstance.node : null;
           },
           enumerable: true,
           configurable: true
@@ -347,13 +344,11 @@
           configurable: true
       });
       ComponentInstance.prototype.mount = function (id) {
-          var _this = this;
           pushTarget(this.watcher);
           this.renderedInstance = instantiate(this.component(this.element.props));
           var markup = this.renderedInstance.mount(this.id = id);
           popTarget();
           this.watcher.clean();
-          emitter.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           return markup;
       };
       ComponentInstance.prototype.same = function (nextElement) {
@@ -363,6 +358,10 @@
       };
       ComponentInstance.prototype.update = function (nextElement) {
           nextElement = nextElement == null ? this.element : nextElement;
+          if (!this.node) {
+              this.element = nextElement;
+              return;
+          }
           this.stateId = 0;
           this.guardLeft = this.guards.length;
           pushTarget(this.watcher);
@@ -381,7 +380,6 @@
           delete this.guardLeft;
           delete this.states;
           delete this.stateId;
-          delete this.node;
           delete this.refs;
           delete this.watcher;
           delete this.element;
@@ -449,7 +447,7 @@
                   _loop_1();
               }
               _this.isBatchUpdating = false;
-              emitter.emit('updated', true);
+              emitter.emit('updated');
           });
       };
       return Reconciler;
@@ -576,7 +574,7 @@
                   var node = createNode(markup);
                   var beforeNode = container.children[beforeIndex];
                   container.insertBefore(node, beforeNode);
-                  emitter.emit('mounted:refs');
+                  emitter.emit('loaded');
                   emitter.emit('mounted');
               }
               else {
@@ -587,47 +585,6 @@
           }
       });
   }
-
-  var EventListenerSet = (function () {
-      function EventListenerSet() {
-          var _this = this;
-          this._eventListeners = {};
-          if (document) {
-              SUPPORTED_EVENTS.forEach(function (event) {
-                  document.addEventListener(event, function (e) {
-                      var id = e.target.getAttribute
-                          && e.target.getAttribute(DATA_ID);
-                      while (id) {
-                          var eventListener = _this._eventListeners[id] && _this._eventListeners[id][event];
-                          if (eventListener) {
-                              eventListener(e);
-                          }
-                          id = getParentId(id);
-                      }
-                  });
-              });
-          }
-      }
-      EventListenerSet.prototype.get = function (id, event) {
-          return this._eventListeners[id][event];
-      };
-      EventListenerSet.prototype.set = function (id, event, eventListener) {
-          if (!this._eventListeners[id]) {
-              this._eventListeners[id] = {};
-          }
-          this._eventListeners[id][event] = eventListener;
-      };
-      EventListenerSet.prototype.remove = function (id, event) {
-          if (this._eventListeners[id]) {
-              delete this._eventListeners[id][event];
-          }
-      };
-      EventListenerSet.prototype.clean = function (id) {
-          delete this._eventListeners[id];
-      };
-      return EventListenerSet;
-  }());
-  var eventListenerSet = new EventListenerSet();
 
   var DOMInstance = (function () {
       function DOMInstance(element) {
@@ -646,14 +603,15 @@
       DOMInstance.prototype.mount = function (id) {
           var _this = this;
           this.id = id;
+          emitter.on('loaded', function () { return _this.node = getNode(_this.id); });
           var markup = "<" + this.element.type + " " + DATA_ID + "=\"" + id + "\" ";
           if (this.element.key != null) {
               markup += "key=\"" + this.element.key + "\" ";
           }
           var props = this.element.props;
-          for (var prop in props) {
+          var _loop_1 = function (prop) {
               if (prop === 'children') {
-                  continue;
+                  return "continue";
               }
               else if (prop === 'className') {
                   markup += "class=\"" + getClassString(props.className) + "\" ";
@@ -661,13 +619,15 @@
               else if (prop === 'style') {
                   markup += "style=\"" + getStyleString(props.style) + "\" ";
               }
-              else if (SUPPORTED_LISTENERS[prop.toLowerCase()]
-                  && is.function(props[prop])) {
-                  eventListenerSet.set(id, prop.toLowerCase().replace(CUT_ON_REGEX, ''), props[prop]);
+              else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(props[prop])) {
+                  emitter.on('loaded', function () { return _this.node[prop.toLowerCase()] = props[prop]; });
               }
               else {
                   markup += prop + "=\"" + props[prop] + "\" ";
               }
+          };
+          for (var prop in props) {
+              _loop_1(prop);
           }
           markup += '>';
           this.childInstances = [];
@@ -678,11 +638,15 @@
               _this.childInstances.push(instance);
           });
           markup += "</" + this.element.type + ">";
-          emitter.on('mounted:refs', function () { return _this.node = getNode(_this.id); });
           if (is.string(this.element.ref) && Dependency.target) {
               var compInst_1 = Dependency.target.instance;
-              emitter.on('mounted:refs', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
+              emitter.on('loaded', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
           }
+          emitter.on('loaded', function () {
+              if (_this.node) {
+                  _this.node.removeAttribute(DATA_ID);
+              }
+          });
           return markup;
       };
       DOMInstance.prototype.same = function (nextElement) {
@@ -692,6 +656,10 @@
       };
       DOMInstance.prototype.update = function (nextElement) {
           nextElement = nextElement == null ? this.element : nextElement;
+          if (!this.node) {
+              this.element = nextElement;
+              return;
+          }
           var node = this.node;
           var prevProps = this.element.props;
           var nextProps = nextElement.props;
@@ -718,11 +686,9 @@
                   }
               }
               else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
-                  var event_1 = prop.toLowerCase().replace(CUT_ON_REGEX, '');
-                  var prevEventListener = eventListenerSet.get(this.id, event_1);
                   var nextEventListener = nextProps[prop];
-                  if (prevEventListener !== nextEventListener) {
-                      eventListenerSet.set(this.id, event_1, nextEventListener);
+                  if (this.node[prop.toLowerCase()] !== nextEventListener) {
+                      this.node[prop.toLowerCase()] = nextEventListener;
                   }
               }
               else {
@@ -735,7 +701,7 @@
           for (var prop in prevProps) {
               if (is.undefined(nextProps[prop]) || is.null(nextProps[prop])) {
                   if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
-                      eventListenerSet.remove(this.id, prop.toLowerCase().replace(CUT_ON_REGEX, ''));
+                      delete this.node[prop.toLowerCase()];
                   }
                   else {
                       node.removeAttribute(prop !== 'className' ? prop : 'class');
@@ -756,9 +722,10 @@
           this.element = nextElement;
       };
       DOMInstance.prototype.unmount = function () {
-          eventListenerSet.clean(this.id);
           this.childInstances.forEach(function (child) { return child.unmount(); });
-          this.node.remove();
+          if (this.node) {
+              this.node.remove();
+          }
           delete this.id;
           delete this.node;
           delete this.index;
@@ -830,7 +797,7 @@
       var node = createNode(markup);
       container.parentNode.insertBefore(node, container);
       container.remove();
-      emitter.emit('mounted:refs');
+      emitter.emit('loaded');
       emitter.emit('mounted');
   }
 
@@ -881,7 +848,7 @@
       }
       else {
           var instance = Dependency.target.instance;
-          if (!instance.id) {
+          if (!instance.node) {
               instance.states.push(observe(state));
           }
           var currentState = instance.currentState;
@@ -925,7 +892,7 @@
       }
       else {
           var instance_1 = Dependency.target.instance;
-          if (instance_1.id) {
+          if (instance_1.node) {
               var prevGuard = instance_1.prevGuard;
               if (is.undefined(prevGuard)) {
                   throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement');
@@ -953,9 +920,11 @@
           }
           else {
               emitter.on('mounted', function () {
-                  var cleanup = effect();
-                  if (cleanup && is.function(cleanup)) {
-                      emitter.on("unmount:" + instance_1.id, cleanup);
+                  if (instance_1.node) {
+                      var cleanup = effect();
+                      if (cleanup && is.function(cleanup)) {
+                          emitter.on("unmount:" + instance_1.id, cleanup);
+                      }
                   }
               });
           }

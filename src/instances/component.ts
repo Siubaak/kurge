@@ -12,7 +12,6 @@ import { pushTarget, popTarget } from '../observer/dependeny'
 export default class ComponentInstance implements Instance {
   id: string
   index: number
-  node: HTMLElement = null
   refs: { [ref: string]: HTMLElement } = {}
   watcher: Watcher = new Watcher(this)
   guards: any[] = []
@@ -33,6 +32,9 @@ export default class ComponentInstance implements Instance {
       ? 'k_' + this.element.key
       : this.index != null ? '' + this.index : null
   }
+  get node(): Text | HTMLElement {
+    return this.renderedInstance ? this.renderedInstance.node : null
+  }
 
   get currentState(): any {
     return this.states[this.stateId++]
@@ -51,9 +53,6 @@ export default class ComponentInstance implements Instance {
     popTarget()
     this.watcher.clean()
   
-    // save root node
-    emitter.on('mounted:refs', () => this.node = getNode(this.id))
-  
     return markup
   }
   same(nextElement: Elem): boolean {
@@ -63,6 +62,11 @@ export default class ComponentInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+
+    if (!this.node) {
+      this.element = nextElement
+      return
+    }
 
     this.stateId = 0
     this.guardLeft = this.guards.length
@@ -84,7 +88,6 @@ export default class ComponentInstance implements Instance {
     delete this.guardLeft
     delete this.states
     delete this.stateId
-    delete this.node
     delete this.refs
     delete this.watcher
     delete this.element

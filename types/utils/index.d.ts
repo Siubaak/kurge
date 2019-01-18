@@ -12,5 +12,4 @@ export declare const is: {
 };
 export declare function hasOwn(object: any, property: string | number | symbol): any;
 export declare function delArrItem(arr: any[], item: any): any[] | void;
-export declare function swap(a: any, b: any): void;
 export declare const nextTick: typeof requestAnimationFrame;

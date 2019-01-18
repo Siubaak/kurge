@@ -156,7 +156,7 @@ export function patch(parentId: string, patches: Patches): void {
         const beforeNode = container.children[beforeIndex]
         // insertBefore will degenerate to be appendChild if beforeNode is undefined
         container.insertBefore(node, beforeNode)
-        emitter.emit('mounted:refs')
+        emitter.emit('loaded')
         emitter.emit('mounted')
       } else {
         // move, and getting the node needed to be moved is enough

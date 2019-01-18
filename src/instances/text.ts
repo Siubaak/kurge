@@ -23,14 +23,16 @@ export default class TextInstance implements Instance {
     this.id = id
 
     // save node, remove span wrapper
-    emitter.on('mounted:refs', () => {
+    emitter.on('loaded', () => {
       const wrapper = getNode(this.id)
-      this.node = wrapper.firstChild as Text
-      if (!this.node) {
-        this.node = createNode('') as Text
+      if (wrapper) {
+        this.node = wrapper.firstChild as Text
+        if (!this.node) {
+          this.node = createNode('') as Text
+        }
+        wrapper.parentNode.insertBefore(this.node, wrapper)
+        wrapper.remove()
       }
-      wrapper.parentNode.insertBefore(this.node, wrapper)
-      wrapper.remove()
     })
 
     return `<span ${DATA_ID}="${id}" >${this.element}</span>`
@@ -40,13 +42,21 @@ export default class TextInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : '' + (nextElement as (number | string))
+
+    if (!this.node) {
+      this.element = nextElement
+      return
+    }
+
     if (this.element !== nextElement) {
       this.element = nextElement
       this.node.textContent = this.element as string
     }
   }
   unmount() {
-    this.node.remove()
+    if (this.node) {
+      this.node.remove()
+    }
     delete this.id
     delete this.node
     delete this.index

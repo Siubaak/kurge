@@ -10,8 +10,8 @@ export default function useEffect(effect: Effect, guard: any[] = null) {
     throw new Error('please call useEffect at top level in a component')
   } else {
     const instance = Dependency.target.instance
-    if (instance.id) {
-      // if the component has been mounted, it has an id
+    if (instance.node) {
+      // if the component has been mounted, it has a node
       const prevGuard = instance.prevGuard
 
       if (is.undefined(prevGuard)) {
@@ -40,13 +40,16 @@ export default function useEffect(effect: Effect, guard: any[] = null) {
         })
       }
     } else {
-      // if the component is mounting, it won't have an id
+      // if the component is mounting, it won't have a node
+      // invoke effect when mounted, then add it again
       emitter.on('mounted', () => {
-        // invoke effect when mounted, then add it again
-        // no needs to remove cleanup first because it's mounting
-        const cleanup = effect()
-        if (cleanup && is.function(cleanup)) {
-          emitter.on(`unmount:${instance.id}`, cleanup)
+        // if no node, it may not mounted correctly
+        if (instance.node) {
+          // no needs to remove cleanup first because it's mounting
+          const cleanup = effect()
+          if (cleanup && is.function(cleanup)) {
+            emitter.on(`unmount:${instance.id}`, cleanup)
+          }
         }
       })
     }

@@ -3,7 +3,6 @@ import Watcher from '../observer/watcher';
 export default class ComponentInstance implements Instance {
     id: string;
     index: number;
-    node: HTMLElement;
     refs: {
         [ref: string]: HTMLElement;
     };
@@ -17,6 +16,7 @@ export default class ComponentInstance implements Instance {
     private renderedInstance;
     constructor(element: Elem);
     readonly key: string;
+    readonly node: Text | HTMLElement;
     readonly currentState: any;
     readonly prevGuard: any;
     mount(id: string): string;

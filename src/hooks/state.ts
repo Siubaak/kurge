@@ -9,8 +9,8 @@ export default function useState(state: any) {
     throw new Error('please call useState at top level in a component')
   } else {
     const instance = Dependency.target.instance
-    if (!instance.id) {
-      // if the component is mounting, it won't have an id
+    if (!instance.node) {
+      // if the component is mounting, it won't have an node
       instance.states.push(observe(state))
     }
 

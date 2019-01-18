@@ -57,7 +57,7 @@ class Reconciler {
         }
       }
       this.isBatchUpdating = false
-      emitter.emit('updated', true)
+      emitter.emit('updated')
     })
   }
 }

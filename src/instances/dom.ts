@@ -1,9 +1,8 @@
 import { is } from '../utils/index'
 import { diff, patch } from '../renderer/diff'
 import { instantiate } from '../renderer/index'
-import eventListenerSet from '../event/index'
 import reconciler from '../renderer/reconciler'
-import { DATA_ID, CUT_ON_REGEX, SUPPORTED_LISTENERS } from '../common/constants'
+import { DATA_ID, SUPPORTED_LISTENERS } from '../common/constants'
 import { VDomNode, Elem, Patches, Instance } from '../common/types'
 import { getNode, getClassString, getStyleString } from '../utils/dom'
 import Dependency from '../observer/dependeny'
@@ -30,6 +29,9 @@ export default class DOMInstance implements Instance {
   mount(id: string): string {
     this.id = id
 
+    // save node
+    emitter.on('loaded', () => this.node = getNode(this.id))
+
     // node head
     let markup = `<${this.element.type} ${DATA_ID}="${id}" `
     if (this.element.key != null) {
@@ -46,16 +48,9 @@ export default class DOMInstance implements Instance {
       } else if (prop === 'style') {
         // invoke getStyleString to transform
         markup += `style="${getStyleString(props.style)}" `
-      } else if (
-        SUPPORTED_LISTENERS[prop.toLowerCase()]
-        && is.function(props[prop])
-      ) {
-        // delegate a listener
-        eventListenerSet.set(
-          id,
-          prop.toLowerCase().replace(CUT_ON_REGEX, ''),
-          props[prop],
-        )
+      } else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(props[prop])) {
+        // add event listener
+        emitter.on('loaded', () => (this.node as any)[prop.toLowerCase()] = props[prop])
       } else {
         // assign any other properties
         markup += `${prop}="${props[prop]}" `
@@ -74,15 +69,18 @@ export default class DOMInstance implements Instance {
 
     // tail
     markup += `</${this.element.type}>`
-
-    // save node
-    emitter.on('mounted:refs', () => this.node = getNode(this.id))
   
     // if set ref, return it when mounted
     if (is.string(this.element.ref) && Dependency.target) {
       const compInst = Dependency.target.instance
-      emitter.on('mounted:refs', () => compInst.refs[this.element.ref] = this.node)
+      emitter.on('loaded', () => compInst.refs[this.element.ref] = this.node)
     }
+    
+    emitter.on('loaded', () => {
+      if (this.node) {
+        this.node.removeAttribute(DATA_ID)
+      }
+    })      
 
     return markup
   }
@@ -93,6 +91,11 @@ export default class DOMInstance implements Instance {
   }
   update(nextElement: Elem): void {
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+
+    if (!this.node) {
+      this.element = nextElement
+      return
+    }
 
     const node = this.node
     const prevProps = this.element.props
@@ -122,12 +125,10 @@ export default class DOMInstance implements Instance {
           (node as any).value = nextValue
         }
       } else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
-        const event: string = prop.toLowerCase().replace(CUT_ON_REGEX, '')
-        const prevEventListener = eventListenerSet.get(this.id, event)
         const nextEventListener = nextProps[prop]
-        if (prevEventListener !== nextEventListener) {
-          // delegate a listener
-          eventListenerSet.set(this.id, event, nextEventListener)
+        if ((this.node as any)[prop.toLowerCase()] !== nextEventListener) {
+          // replace a listener
+          (this.node as any)[prop.toLowerCase()] = nextEventListener
         }
       } else {
         const nextAttr: any = nextProps[prop]
@@ -143,7 +144,7 @@ export default class DOMInstance implements Instance {
       if (is.undefined(nextProps[prop]) || is.null(nextProps[prop])) {
         if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
           // remove the listener
-          eventListenerSet.remove(this.id, prop.toLowerCase().replace(CUT_ON_REGEX, ''))
+          delete (this.node as any)[prop.toLowerCase()]
         } else {
           // remove the attribute
           node.removeAttribute(prop !== 'className' ? prop : 'class')
@@ -170,9 +171,10 @@ export default class DOMInstance implements Instance {
     this.element = nextElement
   }
   unmount() {
-    eventListenerSet.clean(this.id)
     this.childInstances.forEach((child: Instance) => child.unmount())
-    this.node.remove()
+    if (this.node) {
+      this.node.remove()
+    }
     delete this.id
     delete this.node
     delete this.index

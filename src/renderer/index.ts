@@ -48,6 +48,6 @@ export default function render(vdom: VDomNode, container: HTMLElement) {
   const node = createNode(markup)
   container.parentNode.insertBefore(node, container)
   container.remove()
-  emitter.emit('mounted:refs')
+  emitter.emit('loaded')
   emitter.emit('mounted')
 }

@@ -29,8 +29,5 @@ export function delArrItem(arr: any[], item: any): any[] | void {
   }
 }
 
-// swap any two items
-export function swap(a: any, b: any) { [a, b] = [b, a] }
-
 // push the callback to next frame event loop
 export const nextTick = requestAnimationFrame
