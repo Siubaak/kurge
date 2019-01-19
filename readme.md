@@ -1,8 +1,4 @@
-# Kurge &middot;
-[![npm version](https://img.shields.io/npm/v/kurge.svg?style=flat)](https://www.npmjs.com/package/kurge)
-[![travis-ci](https://img.shields.io/travis/Siubaak/kurge.svg?style=flat-square)](https://travis-ci.org/Siubaak/kurge)
-[![coveralls](https://img.shields.io/coveralls/github/Siubaak/kurge.svg?style=flat-square)](https://coveralls.io/github/Siubaak/kurge)
-[![github license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Siubaak/kurge/blob/master/LICENSE)
+# Kurge &middot; [![npm version](https://img.shields.io/npm/v/kurge.svg?style=flat-square)](https://www.npmjs.com/package/kurge) [![travis-ci](https://img.shields.io/travis/Siubaak/kurge.svg?style=flat-square)](https://travis-ci.org/Siubaak/kurge) [![coveralls](https://img.shields.io/coveralls/github/Siubaak/kurge.svg?style=flat-square)](https://coveralls.io/github/Siubaak/kurge) [![github license](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)](https://github.com/Siubaak/kurge/blob/master/LICENSE)
 
 Kurge is a reactive function component based JavaScript UI binding library.
 
@@ -18,6 +14,15 @@ npm i -S kurge
 ```
 
 Or, download the [minimized version](https://github.com/Siubaak/kurge/blob/master/dist/kurge.min.js), and link in a `<script>` tag.
+
+Also, [Kurge-CLI](https://github.com/Siubaak/kurge-cli) is recommended to initial your Kurge app.
+
+```bash
+npm i -g kurge-cli
+kurge -i my-first-kurge-app
+cd my-first-kurge-app
+npm start
+```
 
 ## Documentation
 
