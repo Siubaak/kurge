@@ -1,4 +1,4 @@
-import { Elem, Instance } from '../common/types';
+import { Elem, Instance } from '../shared/types';
 declare class Reconciler {
     private readonly dirtyInstanceSet;
     private isBatchUpdating;

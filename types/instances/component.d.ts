@@ -1,4 +1,4 @@
-import { Elem, Instance } from '../common/types';
+import { Elem, Instance } from '../shared/types';
 import Watcher from '../observer/watcher';
 export default class ComponentInstance implements Instance {
     id: string;

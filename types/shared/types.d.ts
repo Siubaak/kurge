@@ -1,4 +1,4 @@
-export declare type Component = (props: any) => VDomNode;
+export declare type Component = (props: any) => Elem;
 export declare type Effect = () => void | (() => void);
 export interface Instance {
     id: string;

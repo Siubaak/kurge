@@ -1,4 +1,4 @@
-import { Elem, Instance } from '../common/types';
+import { Elem, Instance } from '../shared/types';
 export default class DOMInstance implements Instance {
     id: string;
     index: number;

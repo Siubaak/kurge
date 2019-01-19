@@ -1,6 +1,6 @@
 import { is, hasOwn } from '../utils'
-import { RESERVED_PROPS } from '../common/constants'
-import { Elem, Props, VDomNode, Component } from '../common/types'
+import { RESERVED_PROPS } from '../shared/constants'
+import { Elem, Props, VDomNode, Component } from '../shared/types'
 
 // create vdom node
 export default function createElement(

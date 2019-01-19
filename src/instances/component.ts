@@ -1,9 +1,8 @@
 import { is } from '../utils'
 import emitter from '../utils/emitter'
-import { getNode } from '../utils/dom'
 import { instantiate } from '../renderer'
 import reconciler from '../renderer/reconciler'
-import { VDomNode, Elem, Component, Instance } from '../common/types'
+import { VDomNode, Elem, Component, Instance } from '../shared/types'
 
 import Watcher from '../observer/watcher'
 import { pushTarget, popTarget } from '../observer/dependeny'

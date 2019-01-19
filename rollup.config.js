@@ -1,5 +1,6 @@
 import typescript from 'rollup-plugin-typescript2'
 import { uglify } from 'rollup-plugin-uglify'
+import json from 'rollup-plugin-json'
 
 export default [
   {
@@ -10,9 +11,8 @@ export default [
       file: 'dist/index.js'
     },
     plugins: [
-      typescript({
-        useTsconfigDeclarationDir: true
-      })
+      typescript({ useTsconfigDeclarationDir: true }),
+      json()
     ]
   },
   {

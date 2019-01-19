@@ -1,5 +1,5 @@
 import Dependency from '../observer/dependeny'
-import { Effect } from '../common/types'
+import { Effect } from '../shared/types'
 import emitter from '../utils/emitter'
 import { is } from '../utils'
 

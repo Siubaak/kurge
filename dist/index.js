@@ -931,7 +931,10 @@
       }
   }
 
+  var version = "1.0.0";
+
   var Kurge = {
+      version: version,
       render: render,
       createElement: createElement,
       useState: useState,

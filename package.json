@@ -1,12 +1,14 @@
 {
   "name": "kurge",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "a reactive function component based javascript ui binding library",
-  "types": "./types/index.d.ts",
+  "types": "types/index.d.ts",
   "main": "index.js",
   "scripts": {
-    "build": "rollup -c",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "npm test && rollup -c && npm run move:types",
+    "test": "jest --colors --coverage",
+    "cov": "cat coverage/lcov.info | coveralls",
+    "move:types": "mv types/src/* types && rm -rf types/src"
   },
   "repository": {
     "type": "git",
@@ -24,9 +26,27 @@
   },
   "homepage": "https://github.com/Siubaak/kurge#readme",
   "devDependencies": {
+    "@types/jest": "^23.3.13",
+    "jest": "^23.6.0",
     "rollup": "^1.1.0",
+    "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-typescript2": "^0.18.1",
     "rollup-plugin-uglify": "^6.0.1",
+    "ts-jest": "^23.10.5",
     "typescript": "^3.2.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }

@@ -1,4 +1,8 @@
-# Kurge &middot; [![npm version](https://img.shields.io/npm/v/kurge.svg?style=flat)](https://www.npmjs.com/package/kurge) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Siubaak/kurge/blob/master/LICENSE)
+# Kurge &middot;
+[![npm version](https://img.shields.io/npm/v/kurge.svg?style=flat)](https://www.npmjs.com/package/kurge)
+[![travis-ci](https://img.shields.io/travis/Siubaak/kurge.svg?style=flat-square)](https://travis-ci.org/Siubaak/kurge)
+[![coveralls](https://img.shields.io/coveralls/github/Siubaak/kurge.svg?style=flat-square)](https://coveralls.io/github/Siubaak/kurge)
+[![github license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Siubaak/kurge/blob/master/LICENSE)
 
 Kurge is a reactive function component based JavaScript UI binding library.
 

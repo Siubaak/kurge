@@ -1,4 +1,4 @@
-import { Elem, VDomNode, Instance, Patches, PatchOp } from '../common/types'
+import { Elem, VDomNode, Instance, Patches, PatchOp } from '../shared/types'
 import { instantiate } from '../renderer'
 import { getNode, createNode } from '../utils/dom'
 import reconciler from './reconciler'

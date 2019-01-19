@@ -5,6 +5,7 @@
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
+    "resolveJsonModule": true,
     "declarationDir": "types"
   },
   "include": [
@@ -12,6 +13,6 @@
   ],
   "exclude": [
     "node_modules",
-    "**/*.spec.ts"
+    "**/*.test.ts"
   ]
 }

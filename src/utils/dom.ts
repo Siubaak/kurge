@@ -1,4 +1,4 @@
-import { DATA_ID } from '../common/constants'
+import { DATA_ID } from '../shared/constants'
 
 // get mounted dom node by id
 export function getNode(id: string): HTMLElement {

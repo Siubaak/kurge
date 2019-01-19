@@ -1,6 +1,7 @@
 # Useless directories
 /docs
 /src
+/tests
 
 # Useless configurations
 /.gitignore

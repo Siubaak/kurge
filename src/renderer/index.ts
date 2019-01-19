@@ -1,5 +1,5 @@
-import { Elem, VDomNode } from '../common/types'
-import { Instance } from '../common/types'
+import { Elem, VDomNode } from '../shared/types'
+import { Instance } from '../shared/types'
 import { is } from '../utils'
 import TextInstance from '../instances/text'
 import DOMInstance from '../instances/dom'

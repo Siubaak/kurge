@@ -1,7 +1,7 @@
 import { is } from '../utils'
 import { getNode, createNode } from '../utils/dom'
-import { DATA_ID } from '../common/constants'
-import { Elem, Instance } from '../common/types'
+import { DATA_ID } from '../shared/constants'
+import { Elem, Instance } from '../shared/types'
 import emitter from '../utils/emitter'
 
 // empty node or text node
