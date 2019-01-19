@@ -1,13 +1,6 @@
-# Useless directories
-/docs
-/site
-/src
-/tests
-
-# Useless configurations
-/.gitignore
-/rollup.config.js
-/tsconfig.json
+# Parcel dist and cache
+/dist
+/.cache
 
 # Logs
 logs
@@ -49,9 +42,6 @@ jspm_packages/
 
 # TypeScript v1 declaration files
 typings/
-
-# rollup-plugin-typescript2 cache
-.rpt2_cache
 
 # Optional npm cache directory
 .npm

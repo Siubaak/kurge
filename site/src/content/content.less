@@ -1,0 +1,78 @@
+@import '../app.less';
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  max-width: 1000px;
+  margin: 40px auto;
+  .card {
+    flex: 1;
+    margin: 12px;
+    .title {
+      color: @mainColor;
+    }
+    .desc {
+      line-height: 24px;
+      color: #555;
+    }
+  }
+  .intro {
+    display: flex;
+  }
+  .demo {
+    width: 96%;
+    display: flex;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    align-self: center;
+    .code {
+      flex: 1;
+      height: 400px;
+      overflow: auto;
+      box-sizing: border-box;
+      border-radius: 10px 0 0 10px;
+      pre {
+        margin: 0;
+        code {
+          padding: 24px;
+          font-size: 14px;
+          font-family: "Consolas", "Courier New", "monospace";
+        }
+      }
+    }
+    .example {
+      height: 400px;
+      padding: 24px;
+      box-sizing: border-box;
+      background-color: #fcfcfc;
+      border-radius: 0 10px 10px 0;
+    }
+  }
+  .seperate {
+    width: 100%;
+    margin-top: 48px;
+    height: 1px;
+    border: none;
+    border-bottom: 1px solid #eee;
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .container {
+    .intro {
+      flex-direction: column;
+    }
+    .demo {
+      flex-direction: column;
+      .code {
+        border-radius: 10px 10px 0 0;
+      }
+      .example {
+        border-radius: 0 0 10px 10px;
+        height: auto;
+      }
+    }
+  }
+}

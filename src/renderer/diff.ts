@@ -1,6 +1,6 @@
 import { Elem, VDomNode, Instance, Patches, PatchOp } from '../shared/types'
 import { instantiate } from '../renderer'
-import { getNode, createNode } from '../utils/dom'
+import { createNode } from '../utils/dom'
 import reconciler from './reconciler'
 import ComponentInstance from '../instances/component'
 import emitter from '../utils/emitter'
@@ -136,8 +136,8 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
 }
 
 // patch the previous nodes
-export function patch(parentId: string, patches: Patches): void {
-  const container: HTMLElement = getNode(parentId)
+export function patch(parentInst: Instance, patches: Patches): void {
+  const container: HTMLElement = parentInst.node as HTMLElement
   const { ops, dir } = patches
   // offset of before node caused by inserting node in forward diff
   let insertNum: number = 0
@@ -151,7 +151,7 @@ export function patch(parentId: string, patches: Patches): void {
       if (op.type === 'insert') {
         // insert, and use createNode to create dom node
         ++insertNum
-        const markup: string = op.inst.mount(`${parentId}:${op.inst.key}`)
+        const markup: string = op.inst.mount(`${parentInst.id}:${op.inst.key}`)
         const node = createNode(markup)
         const beforeNode = container.children[beforeIndex]
         // insertBefore will degenerate to be appendChild if beforeNode is undefined

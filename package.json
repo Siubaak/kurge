@@ -1,11 +1,11 @@
 {
   "name": "kurge",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "a reactive function component based javascript ui binding library",
   "types": "types/index.d.ts",
   "main": "index.js",
   "scripts": {
-    "build": "npm test && rollup -c && npm run move:types",
+    "build": "npm test && rm -rf dist types && rollup -c && npm run move:types",
     "test": "jest --colors --coverage",
     "cov": "cat coverage/lcov.info | coveralls",
     "move:types": "mv types/src/* types && rm -rf types/src"

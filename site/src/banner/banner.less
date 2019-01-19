@@ -1,0 +1,56 @@
+@import '../app.less';
+
+.banner {
+  display: flex;
+  height: 600px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: @mainColor;
+  box-shadow: 0 5px 10px #00000033;
+  text-align: center;
+  a {
+    color: #eee;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color .2s;
+    &:hover {
+      color: #aaa;
+    }
+  }
+  .title {
+    color: #eee;
+    font-size: 72px;
+    margin: 0;
+  }
+  .desc {
+    color: #ccc;
+    font-size: 18px;
+    margin: 12px 0;
+  }
+  .opr {
+    font-size: 24px;
+    margin-top: 12px;
+    a {
+      margin: 6px 24px;
+    }
+  }
+  .link {
+    position: absolute;
+    top: 24px;
+    right: 24px;
+    a + a {
+      margin-left: 12px;
+    }
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .banner {
+    height: 400px;
+    .opr {
+      display: flex;
+      flex-direction: column;
+    }
+  }
+}

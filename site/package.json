@@ -1,0 +1,58 @@
+{
+  "name": "kurge-site",
+  "version": "1.0.0",
+  "description": "the homepage of kurge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "parcel public/index.html",
+    "build": "npm run clean && parcel build public/index.html && npm run move",
+    "move": "npm run move:css && npm run move:js && npm run move:map",
+    "move:css": "mv dist/site.*.css ../docs/site.css",
+    "move:js": "mv dist/site.*.js ../docs/site.js",
+    "move:map": "mv dist/site.*.map ../docs/site.map",
+    "clean": "rm -rf dist ../docs/site.css ../docs/site.js ../docs/site.map"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Siubaak/kurge.git"
+  },
+  "keywords": [
+    "homepage",
+    "kurge"
+  ],
+  "author": "baakqiu",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Siubaak/kurge/issues"
+  },
+  "homepage": "https://github.com/Siubaak/kurge#readme",
+  "babel": {
+    "presets": [
+      "env",
+      "react"
+    ]
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {
+        "grid": true,
+        "browsers": [
+          ">1%",
+          "last 2 versions"
+        ]
+      }
+    }
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.4.5",
+    "babel-core": "^6.26.3",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "less": "^3.9.0",
+    "parcel-bundler": "^1.11.0"
+  },
+  "dependencies": {
+    "highlightjs": "^9.12.0"
+  }
+}

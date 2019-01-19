@@ -1,0 +1,91 @@
+@import '../app.less';
+
+.todo-list {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  .desc {
+    margin: 16px 0 6px 0;
+    font-size: 18px;
+    color: @mainColor;
+  }
+  .input-box {
+    width: 240px;
+    height: 36px;
+    box-sizing: border-box;
+    border: 1px solid @mainColor;
+    box-shadow: 0 5px 10px #00000033;
+    display: flex;
+    transition: all .2s;
+    .input {
+      flex: 1;
+      overflow: scroll;
+      padding: 4px 12px;
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 16px;
+      color: @mainColor;
+    }
+    .add {
+      height: 100%;
+      width: 56px;
+      text-align: center;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: @mainColor;
+      background-color: #fff;
+      transition: all .2s;
+      &:hover {
+        background-color: @mainColor;
+        color: #fff;
+      }
+    }
+  }
+  .list {
+    width: 240px;
+    box-sizing: border-box;
+    border: 1px solid @mainColor;
+    box-shadow: 0 5px 10px #00000033;
+    padding: 0;
+    transition: all .2s;
+    .item {
+      width: auto;
+      height: 34px;
+      list-style-type: none;
+      margin: 0;
+      padding: 0 0 0 12px;
+      overflow: hidden;
+      font-size: 16px;
+      color: @mainColor;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff;
+      .del {
+        height: 100%;
+        width: 56px;
+        text-align: center;
+        border: none;
+        outline: none;
+        cursor: pointer;
+        font-size: 14px;
+        color: @mainColor;
+        transition: all .2s;
+        position: relative;
+        right: 0;
+        background-color: #fff;
+        &:hover {
+          background-color: @mainColor;
+          color: #fff;
+        }
+      }
+    }
+    .item + .item {
+      border-top: 1px solid @mainColor;
+    }
+  }
+}

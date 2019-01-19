@@ -558,8 +558,8 @@
           ? { ops: forwardOps, dir: 'forward' }
           : { ops: backwardOps, dir: 'backward' };
   }
-  function patch(parentId, patches) {
-      var container = getNode(parentId);
+  function patch(parentInst, patches) {
+      var container = parentInst.node;
       var ops = patches.ops, dir = patches.dir;
       var insertNum = 0;
       ops.forEach(function (op) {
@@ -570,7 +570,7 @@
           else {
               if (op.type === 'insert') {
                   ++insertNum;
-                  var markup = op.inst.mount(parentId + ":" + op.inst.key);
+                  var markup = op.inst.mount(parentInst.id + ":" + op.inst.key);
                   var node = createNode(markup);
                   var beforeNode = container.children[beforeIndex];
                   container.insertBefore(node, beforeNode);
@@ -716,8 +716,7 @@
               reconciler.enqueueUpdate(prevChildInstances[0], nextChildren[0]);
           }
           else {
-              var patches = diff(prevChildInstances, nextChildren);
-              patch(this.id, patches);
+              patch(this, diff(prevChildInstances, nextChildren));
           }
           this.element = nextElement;
       };
@@ -931,7 +930,7 @@
       }
   }
 
-  var version = "1.0.0";
+  var version = "1.0.2";
 
   var Kurge = {
       version: version,

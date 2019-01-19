@@ -3,7 +3,7 @@ import { diff, patch } from '../renderer/diff'
 import { instantiate } from '../renderer'
 import reconciler from '../renderer/reconciler'
 import { DATA_ID, SUPPORTED_LISTENERS } from '../shared/constants'
-import { VDomNode, Elem, Patches, Instance } from '../shared/types'
+import { VDomNode, Elem, Instance } from '../shared/types'
 import { getNode, getClassString, getStyleString } from '../utils/dom'
 import Dependency from '../observer/dependeny'
 import emitter from '../utils/emitter'
@@ -164,8 +164,7 @@ export default class DOMInstance implements Instance {
       // most common condition: only one and the same node
       reconciler.enqueueUpdate(prevChildInstances[0], nextChildren[0])
     } else {
-      const patches: Patches = diff(prevChildInstances, nextChildren)
-      patch(this.id, patches)
+      patch(this, diff(prevChildInstances, nextChildren))
     }
 
     this.element = nextElement

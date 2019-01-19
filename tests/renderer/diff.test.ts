@@ -4,9 +4,10 @@ import { diff, patch } from '../../src/renderer/diff'
 import DOMInstance from '../../src/instances/dom'
 import emitter from '../../src/utils/emitter'
 
-const h = Kurge.createElement
-
 describe('test/diff.test.js', () => {
+  const h = Kurge.createElement
+  const oldList = getListEleArr([1, 2, 3, 4, 5])
+
   function getListEleArr(list: number[]): VDomNode[] {
     return list.map(i => h('div', { key: i }, i))
   }
@@ -17,7 +18,6 @@ describe('test/diff.test.js', () => {
       return inst
     })
   }
-  const oldList = getListEleArr([1, 2, 3, 4, 5])
 
   it('should diff out only one forward move patch', () => {
     const instList = getListInstArr(oldList)
@@ -79,12 +79,10 @@ describe('test/diff.test.js', () => {
   })
 
   it('should diff and forward patch normally', () => {
-    const instList = getListInstArr(oldList)
-    let markup = ''
-    instList.forEach(inst => markup += inst.mount('kg:' + inst.key))
-    document.body.dataset.kgid = 'kg'
+    const rootInst = new DOMInstance(h('div', null, ...oldList)) 
+    const markup = rootInst.mount('kg')
     document.body.innerHTML = markup
-    const patches = diff(instList, getListEleArr([3, 2, 4, 5, 1, 6]))
+    const patches = diff((rootInst as any).childInstances, getListEleArr([3, 2, 4, 5, 1, 6]))
 
     expect(patches.dir).toBe('forward')
     expect(patches.ops.length).toBe(3)
@@ -99,8 +97,8 @@ describe('test/diff.test.js', () => {
     expect(patches.ops[2].index).toBe(4)
 
     emitter.emit('loaded')
-    patch('kg', patches)
-    const childNodes = document.body.childNodes
+    patch(rootInst, patches)
+    const childNodes = rootInst.node.childNodes
 
     expect(childNodes.length).toBe(6)
     expect((childNodes[0] as any).textContent).toBe('3')
@@ -110,17 +108,14 @@ describe('test/diff.test.js', () => {
     expect((childNodes[4] as any).textContent).toBe('1')
     expect((childNodes[5] as any).textContent).toBe('6')
 
-    delete document.body.dataset.kgid
     document.body.innerHTML = null
   })
 
   it('should diff and backward patch normally', () => {
-    const instList = getListInstArr(oldList)
-    let markup = ''
-    instList.forEach(inst => markup += inst.mount('kg:' + inst.key))
-    document.body.dataset.kgid = 'kg'
+    const rootInst = new DOMInstance(h('div', null, ...oldList)) 
+    const markup = rootInst.mount('kg')
     document.body.innerHTML = markup
-    const patches = diff(instList, getListEleArr([5, 1, 2, 3]))
+    const patches = diff((rootInst as any).childInstances, getListEleArr([5, 1, 2, 3]))
 
     expect(patches.dir).toBe('backward')
     expect(patches.ops.length).toBe(2)
@@ -132,8 +127,8 @@ describe('test/diff.test.js', () => {
     expect(patches.ops[1].index).toBeUndefined()
 
     emitter.emit('loaded')
-    patch('kg', patches)
-    const childNodes = document.body.childNodes
+    patch(rootInst, patches)
+    const childNodes = rootInst.node.childNodes
 
     expect(childNodes.length).toBe(4)
     expect((childNodes[0] as any).textContent).toBe('5')
@@ -141,7 +136,6 @@ describe('test/diff.test.js', () => {
     expect((childNodes[2] as any).textContent).toBe('2')
     expect((childNodes[3] as any).textContent).toBe('3')
 
-    delete document.body.dataset.kgid
     document.body.innerHTML = null
   })
 })

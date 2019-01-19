@@ -1,0 +1,20 @@
+@import '../app.less';
+
+.footer {
+  height: 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: @mainColor;
+  text-align: center;
+  color: #eee;
+  a {
+    color: #eee;
+    cursor: pointer;
+    text-decoration: none;
+    transition: color .2s;
+    &:hover {
+      color: #aaa;
+    }
+  }
+}
