@@ -11,7 +11,7 @@ export default function TodoList() {
     todos: []
   })
   function handleAdd() {
-    if (state.input !== '' && state.todos.length < 7) {
+    if (state.input !== '' && state.todos.length < 6) {
       state.todos.push({ key: uid++, item: state.input })
       state.input = ''
     }

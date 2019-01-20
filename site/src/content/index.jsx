@@ -10,7 +10,7 @@ function getCode(I18N) {
 function TodoList() {
   const state = useState({ input: '', todos: [] })
   function handleAdd(e) {
-    if (state.input !== '' && state.todos.length < 7) {
+    if (state.input !== '' && state.todos.length < 6) {
       state.todos.push({ key: uid++, item: state.input })
       state.input = ''
     }

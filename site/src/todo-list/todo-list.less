@@ -17,7 +17,6 @@
     border: 1px solid @mainColor;
     box-shadow: 0 5px 10px #00000033;
     display: flex;
-    transition: all .2s;
     .input {
       flex: 1;
       overflow: scroll;
@@ -38,7 +37,7 @@
       font-size: 14px;
       color: @mainColor;
       background-color: #fff;
-      transition: all .2s;
+      transition: background-color .2s;
       &:hover {
         background-color: @mainColor;
         color: #fff;
@@ -51,9 +50,7 @@
     border: 1px solid @mainColor;
     box-shadow: 0 5px 10px #00000033;
     padding: 0;
-    transition: all .2s;
     .item {
-      width: auto;
       height: 34px;
       list-style-type: none;
       margin: 0;
@@ -74,10 +71,10 @@
         cursor: pointer;
         font-size: 14px;
         color: @mainColor;
-        transition: all .2s;
         position: relative;
         right: 0;
         background-color: #fff;
+        transition: background-color .2s;
         &:hover {
           background-color: @mainColor;
           color: #fff;
@@ -86,6 +83,17 @@
     }
     .item + .item {
       border-top: 1px solid @mainColor;
+    }
+  }
+}
+
+@media screen and (max-width: 1000px) {
+  .todo-list {
+    .input-box {
+      width: 100%;
+    }
+    .list {
+      width: 100%;
     }
   }
 }
