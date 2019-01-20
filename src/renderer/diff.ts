@@ -99,7 +99,6 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
       })
     }
   }
-  // 同样构造map，以保证O(1)查询
   // create map to make sure O(1) retrieve
   const nextInstanceMap: { [key: string]: Instance } = {}
   nextInstances.forEach((inst: Instance) => {

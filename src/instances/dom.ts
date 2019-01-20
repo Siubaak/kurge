@@ -90,12 +90,9 @@ export default class DOMInstance implements Instance {
       && (nextElement as VDomNode).key === this.element.key
   }
   update(nextElement: Elem): void {
-    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+    if (!this.node) return
 
-    if (!this.node) {
-      this.element = nextElement
-      return
-    }
+    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
 
     const node = this.node
     const prevProps = this.element.props
@@ -171,9 +168,7 @@ export default class DOMInstance implements Instance {
   }
   unmount() {
     this.childInstances.forEach((child: Instance) => child.unmount())
-    if (this.node) {
-      this.node.remove()
-    }
+    if (this.node) this.node.remove()
     delete this.id
     delete this.node
     delete this.index

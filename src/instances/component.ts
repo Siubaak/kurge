@@ -60,12 +60,9 @@ export default class ComponentInstance implements Instance {
       && (nextElement as VDomNode).key === this.element.key
   }
   update(nextElement: Elem): void {
-    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
+    if (!this.node) return
 
-    if (!this.node) {
-      this.element = nextElement
-      return
-    }
+    nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
 
     this.stateId = 0
     this.guardLeft = this.guards.length

@@ -52,7 +52,11 @@ class Reconciler {
         if (instance.id) {
           instance.update(element)
           if (instance instanceof ComponentInstance) {
-            emitter.on('updated', () => emitter.emit(`updated:${instance.id}`))
+            emitter.on('updated', () => {
+              if (instance.node) {
+                emitter.emit(`updated:${instance.id}`)
+              }
+            })
           }
         }
       }

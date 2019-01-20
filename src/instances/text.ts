@@ -41,12 +41,9 @@ export default class TextInstance implements Instance {
     return is.number(nextElement) || is.string(nextElement)
   }
   update(nextElement: Elem): void {
-    nextElement = nextElement == null ? this.element : '' + (nextElement as (number | string))
+    if (!this.node) return
 
-    if (!this.node) {
-      this.element = nextElement
-      return
-    }
+    nextElement = nextElement == null ? this.element : '' + (nextElement as (number | string))
 
     if (this.element !== nextElement) {
       this.element = nextElement
@@ -54,9 +51,7 @@ export default class TextInstance implements Instance {
     }
   }
   unmount() {
-    if (this.node) {
-      this.node.remove()
-    }
+    if (this.node) this.node.remove()
     delete this.id
     delete this.node
     delete this.index
