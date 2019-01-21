@@ -34,8 +34,8 @@ Several [examples here](https://github.com/Siubaak/kurge/tree/master/docs/exampl
 
 ```jsx
 function Hello() {
-  const state = useState({ message: 'World' })
-  return <p>Hello {state.message}!</p> 
+  const message = useState('World')
+  return <p>Hello {message.value}!</p> 
 }
 
 Kurge.render(<Hello/>, document.getElementById('app'))

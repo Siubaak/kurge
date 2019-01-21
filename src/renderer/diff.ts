@@ -2,7 +2,6 @@ import { Elem, VDomNode, Instance, Patches, PatchOp } from '../shared/types'
 import { instantiate } from '../renderer'
 import { createNode } from '../utils/dom'
 import reconciler from './reconciler'
-import ComponentInstance from '../instances/component'
 import emitter from '../utils/emitter'
 
 // diff two array, and return the least operations to modify
@@ -24,10 +23,7 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
     const prevInstance: Instance = prevInstanceMap[key]
     if (prevInstance && prevInstance.same(nextChild)) {
       // if previous instance exists and vdom is same, just update
-      // but ignore update component instance, because it will update itself
-      if (!(prevInstance instanceof ComponentInstance)) {
-        reconciler.enqueueUpdate(prevInstance, nextChild)
-      }
+      reconciler.enqueueUpdate(prevInstance, nextChild)
       nextInstances.push(prevInstance)
     } else {
       const nextInstance = instantiate(nextChild)

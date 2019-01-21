@@ -463,9 +463,7 @@
               : '' + index;
           var prevInstance = prevInstanceMap[key];
           if (prevInstance && prevInstance.same(nextChild)) {
-              if (!(prevInstance instanceof ComponentInstance)) {
-                  reconciler.enqueueUpdate(prevInstance, nextChild);
-              }
+              reconciler.enqueueUpdate(prevInstance, nextChild);
               nextInstances.push(prevInstance);
           }
           else {
@@ -920,7 +918,7 @@
       }
   }
 
-  var version = "1.0.3";
+  var version = "1.0.4";
 
   var Kurge = {
       version: version,
