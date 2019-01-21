@@ -12,12 +12,12 @@
   <script>
     const { render, useContext, createElement: h } = Kurge
 
-    const context = useContext({ count: 0 })
+    const count = useContext(0)
 
     function app() {
       return h('div', {},
-        h('p', null, 'You clicked ' + context.count + ' times'),
-        h('button', { onClick: () => context.count++ }, 'Click me')
+        h('p', null, 'You clicked ' + count.value + ' times'),
+        h('button', { onClick: () => count.value++ }, 'Click me')
       )
     }
 

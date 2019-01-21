@@ -3,7 +3,7 @@ import Dependency from './dependeny'
 
 export default function observe(data: any) {
   if (!is.object(data) && !is.array(data)) {
-    throw new Error('observed data must be object or array')
+    data = { value: data }
   }
   for (const key in data) {
     if (hasOwn(data, key)) {

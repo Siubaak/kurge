@@ -13,11 +13,11 @@
     const { render, useState, createElement: h, useEffect } = Kurge
 
     function app() {
-      const state = useState({ count: 0 })
-      useEffect(() => document.title = `You clicked ${state.count} times`)
+      const count = useState(0)
+      useEffect(() => document.title = `You clicked ${count.value} times`)
       return h('div', {},
-        h('p', null, `You clicked ${state.count} times`),
-        h('button', { onClick: () => state.count++ }, 'Click me')
+        h('p', null, `You clicked ${count.value} times`),
+        h('button', { onClick: () => count.value++ }, 'Click me')
       )
     }
 

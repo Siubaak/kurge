@@ -1,11 +1,8 @@
 import observe from '../observer'
 import Dependency from '../observer/dependeny'
-import { is } from '../utils'
 
 export default function useState(state: any) {
-  if (!is.object(state) && !is.array(state)) {
-    throw new Error('useState only accepts object or array')
-  } else if (!Dependency.target) {
+  if (!Dependency.target) {
     throw new Error('please call useState at top level in a component')
   } else {
     const instance = Dependency.target.instance

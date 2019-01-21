@@ -137,20 +137,17 @@
           return is.number(nextElement) || is.string(nextElement);
       };
       TextInstance.prototype.update = function (nextElement) {
-          nextElement = nextElement == null ? this.element : '' + nextElement;
-          if (!this.node) {
-              this.element = nextElement;
+          if (!this.node)
               return;
-          }
+          nextElement = nextElement == null ? this.element : '' + nextElement;
           if (this.element !== nextElement) {
               this.element = nextElement;
               this.node.textContent = this.element;
           }
       };
       TextInstance.prototype.unmount = function () {
-          if (this.node) {
+          if (this.node)
               this.node.remove();
-          }
           delete this.id;
           delete this.node;
           delete this.index;
@@ -357,11 +354,9 @@
               && nextElement.key === this.element.key;
       };
       ComponentInstance.prototype.update = function (nextElement) {
-          nextElement = nextElement == null ? this.element : nextElement;
-          if (!this.node) {
-              this.element = nextElement;
+          if (!this.node)
               return;
-          }
+          nextElement = nextElement == null ? this.element : nextElement;
           this.stateId = 0;
           this.guardLeft = this.guards.length;
           pushTarget(this.watcher);
@@ -439,7 +434,11 @@
                   if (instance.id) {
                       instance.update(element);
                       if (instance instanceof ComponentInstance) {
-                          emitter.on('updated', function () { return emitter.emit("updated:" + instance.id); });
+                          emitter.on('updated', function () {
+                              if (instance.node) {
+                                  emitter.emit("updated:" + instance.id);
+                              }
+                          });
                       }
                   }
               };
@@ -655,11 +654,9 @@
               && nextElement.key === this.element.key;
       };
       DOMInstance.prototype.update = function (nextElement) {
-          nextElement = nextElement == null ? this.element : nextElement;
-          if (!this.node) {
-              this.element = nextElement;
+          if (!this.node)
               return;
-          }
+          nextElement = nextElement == null ? this.element : nextElement;
           var node = this.node;
           var prevProps = this.element.props;
           var nextProps = nextElement.props;
@@ -722,9 +719,8 @@
       };
       DOMInstance.prototype.unmount = function () {
           this.childInstances.forEach(function (child) { return child.unmount(); });
-          if (this.node) {
+          if (this.node)
               this.node.remove();
-          }
           delete this.id;
           delete this.node;
           delete this.index;
@@ -801,7 +797,7 @@
 
   function observe(data) {
       if (!is.object(data) && !is.array(data)) {
-          throw new Error('observed data must be object or array');
+          data = { value: data };
       }
       for (var key in data) {
           if (hasOwn(data, key)) {
@@ -838,10 +834,7 @@
   }
 
   function useState(state) {
-      if (!is.object(state) && !is.array(state)) {
-          throw new Error('useState only accepts object or array');
-      }
-      else if (!Dependency.target) {
+      if (!Dependency.target) {
           throw new Error('please call useState at top level in a component');
       }
       else {
@@ -860,10 +853,7 @@
   }
 
   function useContext(ctx) {
-      if (!is.object(ctx) && !is.array(ctx)) {
-          throw new Error('useContext only accepts object or array');
-      }
-      else if (Dependency.target) {
+      if (Dependency.target) {
           throw new Error('please call useContext at top level outside all components');
       }
       else {
@@ -930,7 +920,7 @@
       }
   }
 
-  var version = "1.0.2";
+  var version = "1.0.3";
 
   var Kurge = {
       version: version,
