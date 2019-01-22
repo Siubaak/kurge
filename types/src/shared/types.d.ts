@@ -34,3 +34,7 @@ export interface DirtyInstance {
     instance: Instance;
     element: Elem;
 }
+export interface IdleDeadline {
+    timeRemaining: () => number;
+}
+export declare type IdleCallback = (deadline: IdleDeadline) => void;

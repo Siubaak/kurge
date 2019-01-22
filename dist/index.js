@@ -29,16 +29,16 @@
           }
       }
   }
-  function rICB(callback) {
+  function nextTick(callback) {
       if (window.requestIdleCallback) {
           return window.requestIdleCallback(callback);
       }
       var start = Date.now();
-      return setTimeout(function () {
+      return requestAnimationFrame(function () {
           callback({
               timeRemaining: function () { return Math.max(0, 50 - (Date.now() - start)); }
           });
-      }, 1);
+      });
   }
 
   var DATA_ID = 'data-kgid';
@@ -273,9 +273,11 @@
 
   var uid = 0;
   var Dependency = (function () {
-      function Dependency() {
+      function Dependency(specificWatcher) {
+          if (specificWatcher === void 0) { specificWatcher = null; }
           this.id = uid++;
           this.list = [];
+          this.specificWatcher = specificWatcher;
       }
       Dependency.prototype.subscribe = function (watcher) {
           this.list.push(watcher);
@@ -284,7 +286,9 @@
           delArrItem(this.list, watcher);
       };
       Dependency.prototype.collect = function () {
-          if (Dependency.target) {
+          if (Dependency.target &&
+              (!this.specificWatcher ||
+                  this.specificWatcher && this.specificWatcher === Dependency.target)) {
               Dependency.target.depend(this);
           }
       };
@@ -398,7 +402,7 @@
       function DirtyInstanceSet() {
           this.map = {};
           this.arr = new Heap(function (contrast, self) {
-              return contrast.split(':').length > self.split(':').length;
+              return contrast.split(':').length < self.split(':').length;
           });
       }
       Object.defineProperty(DirtyInstanceSet.prototype, "length", {
@@ -440,7 +444,6 @@
           this.isBatchUpdating = true;
           var batchUpdate = function (deadline) {
               var _loop_1 = function () {
-                  console.log(deadline.timeRemaining());
                   var _a = _this.dirtyInstanceSet.shift(), instance = _a.instance, element = _a.element;
                   if (instance.id) {
                       instance.update(element);
@@ -457,14 +460,14 @@
                   _loop_1();
               }
               if (_this.dirtyInstanceSet.length) {
-                  rICB(batchUpdate);
+                  nextTick(batchUpdate);
               }
               else {
                   _this.isBatchUpdating = false;
               }
               emitter.emit('updated');
           };
-          rICB(batchUpdate);
+          nextTick(batchUpdate);
       };
       return Reconciler;
   }());
@@ -813,32 +816,30 @@
       emitter.emit('mounted');
   }
 
-  function observe(data) {
+  function observe(data, specificWatcher) {
+      if (specificWatcher === void 0) { specificWatcher = null; }
       if (!is.object(data) && !is.array(data)) {
           data = { value: data };
       }
       for (var key in data) {
           if (hasOwn(data, key)) {
               if (is.object(data[key]) || is.array(data[key])) {
-                  data[key] = observe(data[key]);
+                  data[key] = observe(data[key], specificWatcher);
               }
           }
       }
-      var dep = new Dependency();
+      var dep = new Dependency(specificWatcher);
       return new Proxy(data, {
           get: function (target, property, receiver) {
               if (hasOwn(target, property)) {
-                  if (Dependency.target) {
-                      dep.collect();
-                  }
+                  dep.collect();
               }
               return Reflect.get(target, property, receiver);
           },
           set: function (target, property, value, receiver) {
-              if (hasOwn(target, property) || is.undefined(target[property])) {
-                  if (value !== target[property]) {
-                      dep.notify();
-                  }
+              if ((hasOwn(target, property) || is.undefined(target[property])) &&
+                  value !== target[property]) {
+                  dep.notify();
               }
               return Reflect.set(target, property, value, receiver);
           },
@@ -867,7 +868,7 @@
       else {
           var instance = Dependency.target.instance;
           if (!instance.node) {
-              instance.states.push(observe(state));
+              instance.states.push(observe(state, Dependency.target));
           }
           var currentState = instance.currentState;
           if (!currentState) {
