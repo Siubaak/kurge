@@ -29,17 +29,7 @@
           }
       }
   }
-  function rICB(callback) {
-      if (window.requestIdleCallback) {
-          return window.requestIdleCallback(callback);
-      }
-      var start = Date.now();
-      return setTimeout(function () {
-          callback({
-              timeRemaining: function () { return Math.max(0, 50 - (Date.now() - start)); }
-          });
-      }, 1);
-  }
+  var nextTick = requestAnimationFrame;
 
   var DATA_ID = 'data-kgid';
   var RESERVED_PROPS = { key: true, ref: true };
@@ -438,9 +428,8 @@
       Reconciler.prototype.runBatchUpdate = function () {
           var _this = this;
           this.isBatchUpdating = true;
-          var batchUpdate = function (deadline) {
+          nextTick(function () {
               var _loop_1 = function () {
-                  console.log(deadline.timeRemaining());
                   var _a = _this.dirtyInstanceSet.shift(), instance = _a.instance, element = _a.element;
                   if (instance.id) {
                       instance.update(element);
@@ -453,18 +442,12 @@
                       }
                   }
               };
-              while (deadline.timeRemaining() > 0 && _this.dirtyInstanceSet.length) {
+              while (_this.dirtyInstanceSet.length) {
                   _loop_1();
               }
-              if (_this.dirtyInstanceSet.length) {
-                  rICB(batchUpdate);
-              }
-              else {
-                  _this.isBatchUpdating = false;
-              }
+              _this.isBatchUpdating = false;
               emitter.emit('updated');
-          };
-          rICB(batchUpdate);
+          });
       };
       return Reconciler;
   }());

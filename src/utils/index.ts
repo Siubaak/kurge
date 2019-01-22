@@ -31,3 +31,16 @@ export function delArrItem(arr: any[], item: any): any[] | void {
 
 // push the callback to next frame event loop
 export const nextTick = requestAnimationFrame
+
+// simple request
+export function rICB(callback: (deadline: { timeRemaining: () => number }) => void) {
+  if ((window as any).requestIdleCallback) {
+    return (window as any).requestIdleCallback(callback)
+  }
+  const start = Date.now()
+  return setTimeout(function () {
+    callback({
+      timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
+    })
+  }, 1)
+}

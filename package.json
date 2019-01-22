@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "build": "npm test && rm -rf dist types && rollup -c && npm run move:types",
+    "dev": "rollup -wc",
     "test": "jest --colors --coverage",
     "cov": "cat coverage/lcov.info | coveralls",
     "move:types": "mv types/src/* types && rm -rf types/src"

@@ -1,6 +1,6 @@
 import Heap from '../utils/heap'
 import emitter from '../utils/emitter'
-import { nextTick } from '../utils'
+import { rICB } from '../utils'
 import { Elem, Instance, DirtyInstance } from '../shared/types'
 import ComponentInstance from '../instances/component'
 
@@ -45,8 +45,9 @@ class Reconciler {
 
   private runBatchUpdate() {
     this.isBatchUpdating = true
-    nextTick(() => {
-      while (this.dirtyInstanceSet.length) {
+    const batchUpdate = (deadline: { timeRemaining: () => number }) => {
+      while (deadline.timeRemaining() > 0 && this.dirtyInstanceSet.length) {
+        console.log(deadline.timeRemaining())
         const { instance, element } = this.dirtyInstanceSet.shift()
         // check id to prevent the instance has been unmounted before updating
         if (instance.id) {
@@ -60,9 +61,14 @@ class Reconciler {
           }
         }
       }
-      this.isBatchUpdating = false
+      if (this.dirtyInstanceSet.length) {
+        rICB(batchUpdate)
+      } else {
+        this.isBatchUpdating = false
+      }
       emitter.emit('updated')
-    })
+    }
+    rICB(batchUpdate)
   }
 }
 

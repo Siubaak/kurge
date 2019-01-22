@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html style="width: 100%; height: 100%; overflow: hidden;">
+  <head>
+    <meta charset="utf-8">
+    <title>Stack Example</title>
+    <link rel="stylesheet" href="base.css" />
+  </head>
+  <body>
+    <h1>Stack Example</h1>
+    <div id="app"></div>
+    <script src="kurge.stack.js"></script>
+    <script>
+      const { render, useState, createElement: h, useEffect } = Kurge
+
+      const dotStyle = {
+        position: 'absolute',
+        background: '#61dafb',
+        font: 'normal 15px sans-serif',
+        textAlign: 'center',
+        cursor: 'pointer',
+      }
+      const containerStyle = {
+        position: 'absolute',
+        transformOrigin: '0 0',
+        left: '50%',
+        top: '50%',
+        width: '10px',
+        height: '10px',
+        background: '#eee',
+      }
+      const targetSize = 25
+
+      function Dot(props) {
+        const hover = useState(false)
+        const s = props.size * 1.3
+        const style = {
+          ...dotStyle,
+          width: s + 'px',
+          height: s + 'px',
+          left: (props.x) + 'px',
+          top: (props.y) + 'px',
+          borderRadius: (s / 2) + 'px',
+          lineHeight: (s) + 'px',
+          background: hover.value ? '#ff0' : dotStyle.background
+        }
+        return (
+          h('div', {
+            style,
+            onMouseEnter: () => hover.value = true,
+            onMouseLeave: () => hover.value = false
+          }, hover.value ? `*${props.text}*` : props.text)
+        )
+      }
+      function SierpinskiTriangle({ x, y, s, children }) {
+        if (s <= targetSize) {
+          return h(Dot, {
+              x: x - (targetSize / 2),
+              y: y - (targetSize / 2),
+              size: targetSize,
+              text: children
+          })
+        }
+        const newSize = s / 2
+        const slowDown = true
+        if (slowDown) {
+          const e = performance.now() + 0.8
+          while (performance.now() < e) {
+            // Artificially long execution time.
+          }
+        }
+        s /= 2
+        return h('div', null,
+          h(SierpinskiTriangle, {
+            x: x,
+            y: y - (s / 2),
+            s: s
+          }, children),
+          h(SierpinskiTriangle, {
+            x: x - s,
+            y: y + (s / 2),
+            s: s
+          }, children),
+          h(SierpinskiTriangle, {
+            x: x + s,
+            y: y + (s / 2),
+            s: s
+          }, children)
+        )
+      }
+      
+      const start = Date.now()
+      function ExampleApplication(props) {
+        const seconds = useState(0)
+
+        function tick() {
+          seconds.value = (seconds.value % 10) + 1
+        }
+        useEffect(() => {
+          const intervalID = setInterval(tick, 1000)
+          return () => {
+            clearInterval(this.intervalID)
+          }
+        }, [])
+        
+        const elapsed = Date.now() - start
+        const t = (elapsed / 1000) % 10
+        const scale = 1 + (t > 5 ? 10 - t : t) / 10
+        const transform = 'scaleX(' + (scale / 2.1) + ') scaleY(0.7) translateZ(0.1px)'
+        return (
+          h('div', { id: 'app', style: { ...containerStyle, transform } },
+            h('div', null,
+              h(SierpinskiTriangle, {
+                x: 0,
+                y: 0,
+                s: 1000
+              }, seconds.value)
+            )
+          )
+        )
+      }
+
+      function update() {
+        render(
+          h(ExampleApplication),
+          document.getElementById('app')
+        )
+      }
+    </script>
+  </body>
+</html>
