@@ -53,3 +53,11 @@ export interface DirtyInstance {
   instance: Instance
   element: Elem
 }
+
+// resquestIdleCallback callback argument
+export interface IdleDeadline {
+  timeRemaining: () => number
+}
+
+// resquestIdleCallback callback
+export type IdleCallback = (deadline: IdleDeadline) => void

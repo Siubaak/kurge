@@ -1,3 +1,5 @@
+import { IdleCallback } from '../shared/types'
+
 // strict type validators
 const _toString = Object.prototype.toString
 export const is = {
@@ -29,18 +31,15 @@ export function delArrItem(arr: any[], item: any): any[] | void {
   }
 }
 
-// push the callback to next frame event loop
-export const nextTick = requestAnimationFrame
-
-// simple request
-export function rICB(callback: (deadline: { timeRemaining: () => number }) => void) {
+// simple requestIdleCallback polyfill
+export function nextTick(callback: IdleCallback) {
   if ((window as any).requestIdleCallback) {
     return (window as any).requestIdleCallback(callback)
   }
   const start = Date.now()
-  return setTimeout(function () {
+  return requestAnimationFrame(function () {
     callback({
       timeRemaining: () => Math.max(0, 50 - (Date.now() - start))
     })
-  }, 1)
+  })
 }

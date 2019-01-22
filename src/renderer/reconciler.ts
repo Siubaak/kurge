@@ -1,7 +1,7 @@
 import Heap from '../utils/heap'
 import emitter from '../utils/emitter'
-import { rICB } from '../utils'
-import { Elem, Instance, DirtyInstance } from '../shared/types'
+import { nextTick } from '../utils'
+import { Elem, Instance, DirtyInstance, IdleDeadline } from '../shared/types'
 import ComponentInstance from '../instances/component'
 
 // dirty instance set 
@@ -32,7 +32,7 @@ class DirtyInstanceSet {
 // reconciler for async update, and avoid multiple updates of the same instance
 // mount and unmount is sync, and only update is async
 class Reconciler {
-  private readonly dirtyInstanceSet = new DirtyInstanceSet() 
+  private readonly dirtyInstanceSet = new DirtyInstanceSet()
   private isBatchUpdating: boolean = false
 
   enqueueUpdate(instance: Instance, element: Elem = null): void {
@@ -45,9 +45,8 @@ class Reconciler {
 
   private runBatchUpdate() {
     this.isBatchUpdating = true
-    const batchUpdate = (deadline: { timeRemaining: () => number }) => {
+    const batchUpdate = (deadline: IdleDeadline) => {
       while (deadline.timeRemaining() > 0 && this.dirtyInstanceSet.length) {
-        console.log(deadline.timeRemaining())
         const { instance, element } = this.dirtyInstanceSet.shift()
         // check id to prevent the instance has been unmounted before updating
         if (instance.id) {
@@ -62,13 +61,13 @@ class Reconciler {
         }
       }
       if (this.dirtyInstanceSet.length) {
-        rICB(batchUpdate)
+        nextTick(batchUpdate)
       } else {
         this.isBatchUpdating = false
       }
       emitter.emit('updated')
     }
-    rICB(batchUpdate)
+    nextTick(batchUpdate)
   }
 }
 
