@@ -7,6 +7,7 @@ import ComponentInstance from '../instances/component'
 import createElement from '../vdom'
 import emitter from '../utils/emitter'
 import { createNode } from '../utils/dom'
+import Dependency from '../observer/dependeny'
 
 // instantiate vdom element 
 export function instantiate(element: Elem) {
@@ -33,7 +34,9 @@ export function instantiate(element: Elem) {
 
 // render markup and mount
 export default function render(vdom: VDomNode, container: HTMLElement) {
-  if (!is.object(vdom)) {
+  if (Dependency.target) {
+    throw new Error('please call render outside all components')
+  } else if (!is.object(vdom)) {
     throw new Error('please offer a legal VDOM node')
   } else if (!container) {
     throw new Error('a root DOM node is needed to mount the app')

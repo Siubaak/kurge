@@ -772,7 +772,10 @@
       return instance;
   }
   function render(vdom, container) {
-      if (!is.object(vdom)) {
+      if (Dependency.target) {
+          throw new Error('please call render outside all components');
+      }
+      else if (!is.object(vdom)) {
           throw new Error('please offer a legal VDOM node');
       }
       else if (!container) {
@@ -831,6 +834,15 @@
       });
   }
 
+  function createContext(ctx) {
+      if (Dependency.target) {
+          throw new Error('please call createContext outside all components');
+      }
+      else {
+          return observe(ctx);
+      }
+  }
+
   function useState(state) {
       if (!Dependency.target) {
           throw new Error('please call useState at top level in a component');
@@ -847,15 +859,6 @@
           else {
               return currentState;
           }
-      }
-  }
-
-  function useContext(ctx) {
-      if (Dependency.target) {
-          throw new Error('please call useContext at top level outside all components');
-      }
-      else {
-          return observe(ctx);
       }
   }
 
@@ -918,14 +921,14 @@
       }
   }
 
-  var version = "1.0.4";
+  var version = "1.0.5";
 
   var Kurge = {
       version: version,
       render: render,
       createElement: createElement,
+      createContext: createContext,
       useState: useState,
-      useContext: useContext,
       useRefs: useRefs,
       useEffect: useEffect
   };

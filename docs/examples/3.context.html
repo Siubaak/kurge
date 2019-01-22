@@ -10,9 +10,9 @@
   <div id="app"></div>
   <script src="../../dist/index.js"></script>
   <script>
-    const { render, useContext, createElement: h } = Kurge
+    const { render, createContext, createElement: h } = Kurge
 
-    const count = useContext(0)
+    const count = createContext(0)
 
     function app() {
       return h('div', {},

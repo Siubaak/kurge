@@ -1,5 +1,5 @@
-import { useContext } from '../../..'
+import { createContext } from '../../..'
 
-export default useContext({
+export default createContext({
   lang: 'EN' // [CN, EN]
 })
