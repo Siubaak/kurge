@@ -1,5 +1,8 @@
 // function component type
-export type Component = (props: any) => Elem
+export interface Component {
+  (props: any): Elem
+  shouldUpdate?: (prevProps: Props, nextProps: Props) => boolean
+}
 
 // effect type
 export type Effect = () => void | (() => void)

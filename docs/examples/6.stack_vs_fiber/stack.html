@@ -96,7 +96,7 @@
           seconds.value = (seconds.value % 10) + 1
         }
         useEffect(() => {
-          const intervalID = setInterval(tick, 1000)
+          const intervalID = setInterval(tick, 16)
           return () => {
             clearInterval(this.intervalID)
           }
@@ -119,12 +119,10 @@
         )
       }
 
-      function update() {
-        render(
-          h(ExampleApplication),
-          document.getElementById('app')
-        )
-      }
+      render(
+        h(ExampleApplication),
+        document.getElementById('app')
+      )
     </script>
   </body>
 </html>
