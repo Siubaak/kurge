@@ -17,14 +17,14 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
   }
   const dep: Dependency = new Dependency(specificWatcher)
   return new Proxy(data, {
-    get(target, property, receiver) {
+    get(target, property) {
       if (hasOwn(target, property)) {
         // collect dependencies
         dep.collect()
       }
-      return Reflect.get(target, property, receiver)
+      return target[property]
     },
-    set(target, property, value, receiver) {
+    set(target, property, value) {
       if (
         (hasOwn(target, property) || is.undefined(target[property])) &&
         value !== target[property]
@@ -32,14 +32,15 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
         // notify watchers
         dep.notify()
       }
-      return Reflect.set(target, property, value, receiver)
+      target[property] = value
+      return true
     },
     deleteProperty(target, property) {
       if (hasOwn(target, property)) {
         // notify watchers
         dep.notify()
       }
-      return Reflect.deleteProperty(target, property)
+      return delete target[property]
     }
   })
 }

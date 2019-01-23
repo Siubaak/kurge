@@ -29,7 +29,7 @@
           }
       }
   }
-  function rICB(callback) {
+  function requestIdleCallbackPolyfill(callback) {
       var start = Date.now();
       return requestAnimationFrame(function () {
           callback({
@@ -37,7 +37,7 @@
           });
       });
   }
-  var nextTick = window.requestIdleCallback || rICB;
+  var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
 
   var DATA_ID = 'data-kgid';
   var RESERVED_PROPS = { key: true, ref: true };
@@ -822,7 +822,10 @@
 
   function observe(data, specificWatcher) {
       if (specificWatcher === void 0) { specificWatcher = null; }
-      if (!is.object(data) && !is.array(data)) {
+      if (is.function(data)) {
+          throw new Error('function can\'t be observed');
+      }
+      else if (!is.object(data) && !is.array(data)) {
           data = { value: data };
       }
       for (var key in data) {
@@ -834,24 +837,25 @@
       }
       var dep = new Dependency(specificWatcher);
       return new Proxy(data, {
-          get: function (target, property, receiver) {
+          get: function (target, property) {
               if (hasOwn(target, property)) {
                   dep.collect();
               }
-              return Reflect.get(target, property, receiver);
+              return target[property];
           },
-          set: function (target, property, value, receiver) {
+          set: function (target, property, value) {
               if ((hasOwn(target, property) || is.undefined(target[property])) &&
                   value !== target[property]) {
                   dep.notify();
               }
-              return Reflect.set(target, property, value, receiver);
+              target[property] = value;
+              return true;
           },
           deleteProperty: function (target, property) {
               if (hasOwn(target, property)) {
                   dep.notify();
               }
-              return Reflect.deleteProperty(target, property);
+              return delete target[property];
           }
       });
   }
@@ -943,7 +947,7 @@
       }
   }
 
-  var version = "1.1.0";
+  var version = "1.1.1";
 
   var Kurge = {
       version: version,
