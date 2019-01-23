@@ -11,10 +11,12 @@
   <script src="../../proxy.polyfill.js"></script>
   <script src="kurge_1.1.1.js"></script>
   <script>
-    const { render, useState, createElement: h } = Kurge
+    var render = Kurge.render
+    var useState = Kurge.useState
+    var h = Kurge.createElement
 
     function app() {
-      const count = useState(0)
+      var count = useState(0)
       return h('div', {},
         h('p', null, 'You clicked ' + count.value + ' times'),
         h('button', { onClick: () => count.value++ }, 'Click me')

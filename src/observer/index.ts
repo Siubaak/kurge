@@ -1,6 +1,8 @@
 import { is, hasOwn } from '../utils'
 import Dependency from './dependeny'
 import Watcher from './watcher'
+import Proxy from './polyfill/proxy'
+import Reflect from './polyfill/reflect'
 
 export default function observe(data: any, specificWatcher: Watcher = null) {
   if (is.function(data)) {
@@ -16,13 +18,13 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
     }
   }
   const dep: Dependency = new Dependency(specificWatcher)
-  return new Proxy(data, {
+  const handler: ProxyHandler<any> = {
     get(target, property) {
       if (hasOwn(target, property)) {
         // collect dependencies
         dep.collect()
       }
-      return target[property]
+      return Reflect.get(target, property)
     },
     set(target, property, value) {
       if (
@@ -32,15 +34,25 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
         // notify watchers
         dep.notify()
       }
-      target[property] = value
-      return true
+      return Reflect.set(target, property, value)
+    },
+    defineProperty(target, property, descriptor) {
+      if (
+        (hasOwn(target, property) || is.undefined(target[property])) &&
+        descriptor.value !== target[property]
+      ) {
+        // notify watchers
+        dep.notify()
+      }
+      return Reflect.defineProperty(target, property, descriptor);
     },
     deleteProperty(target, property) {
       if (hasOwn(target, property)) {
         // notify watchers
         dep.notify()
       }
-      return delete target[property]
+      return Reflect.deleteProperty(target, property)
     }
-  })
+  }
+  return new Proxy(data, handler)
 }

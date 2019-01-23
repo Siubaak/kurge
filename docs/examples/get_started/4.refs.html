@@ -11,11 +11,16 @@
   <script src="../../proxy.polyfill.js"></script>
   <script src="kurge_1.1.1.js"></script>
   <script>
-    const { render, useRefs, createElement: h, useEffect } = Kurge
+    var render = Kurge.render
+    var useRefs = Kurge.useRefs
+    var useEffect = Kurge.useEffect
+    var h = Kurge.createElement
 
     function app() {
-      const refs = useRefs()
-      useEffect(() => refs.field.focus())
+      var refs = useRefs()
+      useEffect(function () {
+        refs.field.focus()
+      })
       return h('input', { ref: 'field' })
     }
 

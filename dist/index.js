@@ -38,6 +38,19 @@
       });
   }
   var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
+  function setProto(object, proto) {
+      if (Object.setPrototypeOf) {
+          Object.setPrototypeOf(object, proto);
+          return true;
+      }
+      else if (object.__proto__) {
+          object.__proto__ = proto;
+          return true;
+      }
+      else {
+          return false;
+      }
+  }
 
   var DATA_ID = 'data-kgid';
   var RESERVED_PROPS = { key: true, ref: true };
@@ -820,6 +833,121 @@
       emitter.emit('mounted');
   }
 
+  var arrayProto = Array.prototype;
+  var mutatedMethods = [
+      'push',
+      'pop',
+      'shift',
+      'unshift',
+      'splice',
+      'sort',
+      'reverse'
+  ];
+  function createMutatedArray(handler) {
+      var mutatedArray = [];
+      Object.defineProperty(mutatedArray, '__updateId__', {
+          value: 0,
+          enumerable: false,
+          configurable: true,
+          writable: true
+      });
+      var mutatedArrayProto = Object.create(arrayProto);
+      setProto(mutatedArray, mutatedArrayProto);
+      mutatedMethods.forEach(function (method) {
+          Object.defineProperty(mutatedArrayProto, method, {
+              value: function () {
+                  var args = [];
+                  for (var _i = 0; _i < arguments.length; _i++) {
+                      args[_i] = arguments[_i];
+                  }
+                  var observeStart = null;
+                  switch (method) {
+                      case 'push':
+                      case 'unshift':
+                          observeStart = 0;
+                          break;
+                      case 'splice':
+                          observeStart = 2;
+                          break;
+                  }
+                  if (is.number(observeStart)) {
+                      for (var i = observeStart; i < args.length; i++) {
+                          args[i] = observe(args[i]);
+                      }
+                  }
+                  console.log(1);
+                  handler.set(mutatedArray, '__updateId__', mutatedArray.__updateId__++, null);
+                  return arrayProto[method].apply(this, args);
+              },
+              configurable: true,
+              enumerable: false,
+              writable: true
+          });
+      });
+      return mutatedArray;
+  }
+  var ProxyPolyfill = (function () {
+      function ProxyPolyfill(target, handler) {
+          var isArray = is.array(target);
+          var proxy = isArray ? createMutatedArray(handler) : {};
+          var propertyMap = {};
+          var getter = function (p) {
+              return handler.get(this, p, proxy);
+          };
+          var setter = function (p, v) {
+              handler.set(this, p, v, proxy);
+          };
+          console.log(Object.getOwnPropertyNames(target));
+          Object.getOwnPropertyNames(target).forEach(function (prop) {
+              var oriDescriptor = Object.getOwnPropertyDescriptor(target, prop);
+              if (oriDescriptor.configurable) {
+                  Object.defineProperty(proxy, prop, {
+                      enumerable: !!oriDescriptor.enumerable,
+                      get: getter.bind(target, prop),
+                      set: setter.bind(target, prop)
+                  });
+              }
+              propertyMap[prop] = true;
+          });
+          var targetProto = Object.getPrototypeOf ? Object.getPrototypeOf(target) : target.__proto__;
+          var prototypeOk = false;
+          if (isArray) {
+              var mutatedArrayProto = Object.getPrototypeOf ? Object.getPrototypeOf(proxy) : proxy.__proto__;
+              prototypeOk = setProto(mutatedArrayProto, targetProto);
+          }
+          else {
+              prototypeOk = setProto(proxy, targetProto);
+          }
+          if (handler.get || !prototypeOk) {
+              for (var key in target) {
+                  if (!propertyMap[key]) {
+                      Object.defineProperty(proxy, key, { get: getter.bind(target, key) });
+                  }
+              }
+          }
+          return proxy;
+      }
+      return ProxyPolyfill;
+  }());
+  var Proxy = window.Proxy || ProxyPolyfill;
+
+  var ReflectPolyfill = {
+      get: function (target, property) {
+          return target[property];
+      },
+      set: function (target, property, value) {
+          target[property] = value;
+          return true;
+      },
+      defineProperty: function (target, property, descriptor) {
+          return Object.defineProperty(target, property, descriptor);
+      },
+      deleteProperty: function (target, property) {
+          return delete target[property];
+      }
+  };
+  var Reflect = window.Reflect || ReflectPolyfill;
+
   function observe(data, specificWatcher) {
       if (specificWatcher === void 0) { specificWatcher = null; }
       if (is.function(data)) {
@@ -836,28 +964,35 @@
           }
       }
       var dep = new Dependency(specificWatcher);
-      return new Proxy(data, {
+      var handler = {
           get: function (target, property) {
               if (hasOwn(target, property)) {
                   dep.collect();
               }
-              return target[property];
+              return Reflect.get(target, property);
           },
           set: function (target, property, value) {
               if ((hasOwn(target, property) || is.undefined(target[property])) &&
                   value !== target[property]) {
                   dep.notify();
               }
-              target[property] = value;
-              return true;
+              return Reflect.set(target, property, value);
+          },
+          defineProperty: function (target, property, descriptor) {
+              if ((hasOwn(target, property) || is.undefined(target[property])) &&
+                  descriptor.value !== target[property]) {
+                  dep.notify();
+              }
+              return Reflect.defineProperty(target, property, descriptor);
           },
           deleteProperty: function (target, property) {
               if (hasOwn(target, property)) {
                   dep.notify();
               }
-              return delete target[property];
+              return Reflect.deleteProperty(target, property);
           }
-      });
+      };
+      return new Proxy(data, handler);
   }
 
   function createContext(ctx) {
