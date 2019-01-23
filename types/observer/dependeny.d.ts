@@ -3,6 +3,8 @@ export default class Dependency {
     static target: Watcher;
     readonly id: number;
     readonly list: Watcher[];
+    private readonly specificWatcher;
+    constructor(specificWatcher?: Watcher);
     subscribe(watcher: Watcher): void;
     unsubscribe(watcher: Watcher): void;
     collect(): void;

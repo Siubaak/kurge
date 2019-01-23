@@ -2,13 +2,13 @@
 <html style="width: 100%; height: 100%; overflow: hidden;">
   <head>
     <meta charset="utf-8">
-    <title>Fiber Example</title>
+    <title>Kurge Fiber Example</title>
     <link rel="stylesheet" href="base.css" />
   </head>
   <body>
-    <h1>Fiber Example</h1>
+    <h1>Kurge Fiber Example</h1>
     <div id="app"></div>
-    <script src="../../../dist/index.js"></script>
+    <script src="kurge_1.1.0.js"></script>
     <script>
       const { render, useState, createElement: h, useEffect } = Kurge
 
@@ -95,12 +95,7 @@
         function tick() {
           seconds.value = (seconds.value % 10) + 1
         }
-        useEffect(() => {
-          const intervalID = setInterval(tick, 16)
-          return () => {
-            clearInterval(this.intervalID)
-          }
-        }, [])
+        useEffect(() => requestAnimationFrame(tick))
         
         const elapsed = Date.now() - start
         const t = (elapsed / 1000) % 10
@@ -119,10 +114,7 @@
         )
       }
 
-      render(
-        h(ExampleApplication),
-        document.getElementById('app')
-      )
+      render(h(ExampleApplication), document.getElementById('app'))
     </script>
   </body>
 </html>

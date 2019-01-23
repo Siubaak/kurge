@@ -61,6 +61,8 @@ class Reconciler {
         }
       }
       if (this.dirtyInstanceSet.length) {
+        // if reconciler still has dirty instance which needs to be updated
+        // but no time left for updating, wait for the next tick
         nextTick(batchUpdate)
       } else {
         this.isBatchUpdating = false
