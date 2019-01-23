@@ -29,10 +29,7 @@
           }
       }
   }
-  function nextTick(callback) {
-      if (window.requestIdleCallback) {
-          return window.requestIdleCallback(callback);
-      }
+  function rICB(callback) {
       var start = Date.now();
       return requestAnimationFrame(function () {
           callback({
@@ -40,6 +37,7 @@
           });
       });
   }
+  var nextTick = window.requestIdleCallback || rICB;
 
   var DATA_ID = 'data-kgid';
   var RESERVED_PROPS = { key: true, ref: true };

@@ -1,4 +1,3 @@
-import { IdleCallback } from '../shared/types';
 export declare const is: {
     undefined: (val: any) => boolean;
     null: (val: any) => boolean;
@@ -13,4 +12,4 @@ export declare const is: {
 };
 export declare function hasOwn(object: any, property: string | number | symbol): any;
 export declare function delArrItem(arr: any[], item: any): any[] | void;
-export declare function nextTick(callback: IdleCallback): any;
+export declare const nextTick: any;
