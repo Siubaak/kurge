@@ -40,4 +40,4 @@ function rICB(callback: IdleCallback) {
     })
   })
 }
-export const nextTick = (window as any).requestIdleCallback || rICB
+export const nextTick: (callback: IdleCallback) => number = (window as any).requestIdleCallback || rICB
