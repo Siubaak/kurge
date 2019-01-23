@@ -8,7 +8,7 @@ export default function useState(state: any) {
     const instance = Dependency.target.instance
     if (!instance.node) {
       // if the component is mounting, it won't have an node
-      instance.states.push(observe(state))
+      instance.states.push(observe(state, Dependency.target))
     }
 
     const currentState = instance.currentState

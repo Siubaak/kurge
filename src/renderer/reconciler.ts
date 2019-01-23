@@ -1,7 +1,7 @@
 import Heap from '../utils/heap'
 import emitter from '../utils/emitter'
 import { nextTick } from '../utils'
-import { Elem, Instance, DirtyInstance } from '../shared/types'
+import { Elem, Instance, DirtyInstance, IdleDeadline } from '../shared/types'
 import ComponentInstance from '../instances/component'
 
 // dirty instance set 
@@ -9,7 +9,7 @@ class DirtyInstanceSet {
   private readonly map: { [ id: string ]: DirtyInstance } = {}
   private readonly arr: Heap<string> = new Heap(
     (contrast: string, self: string) =>
-      contrast.split(':').length > self.split(':').length
+      contrast.split(':').length < self.split(':').length
   )
   get length(): number {
     return this.arr.length
@@ -32,7 +32,7 @@ class DirtyInstanceSet {
 // reconciler for async update, and avoid multiple updates of the same instance
 // mount and unmount is sync, and only update is async
 class Reconciler {
-  private readonly dirtyInstanceSet = new DirtyInstanceSet() 
+  private readonly dirtyInstanceSet = new DirtyInstanceSet()
   private isBatchUpdating: boolean = false
 
   enqueueUpdate(instance: Instance, element: Elem = null): void {
@@ -45,8 +45,8 @@ class Reconciler {
 
   private runBatchUpdate() {
     this.isBatchUpdating = true
-    nextTick(() => {
-      while (this.dirtyInstanceSet.length) {
+    const batchUpdate = (deadline: IdleDeadline) => {
+      while (deadline.timeRemaining() > 0 && this.dirtyInstanceSet.length) {
         const { instance, element } = this.dirtyInstanceSet.shift()
         // check id to prevent the instance has been unmounted before updating
         if (instance.id) {
@@ -60,9 +60,16 @@ class Reconciler {
           }
         }
       }
-      this.isBatchUpdating = false
+      if (this.dirtyInstanceSet.length) {
+        // if reconciler still has dirty instance which needs to be updated
+        // but no time left for updating, wait for the next tick
+        nextTick(batchUpdate)
+      } else {
+        this.isBatchUpdating = false
+      }
       emitter.emit('updated')
-    })
+    }
+    nextTick(batchUpdate)
   }
 }
 

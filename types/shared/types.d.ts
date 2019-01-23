@@ -1,4 +1,7 @@
-export declare type Component = (props: any) => Elem;
+export interface Component {
+    (props: any): Elem;
+    shouldUpdate?: (prevProps: Props, nextProps: Props) => boolean;
+}
 export declare type Effect = () => void | (() => void);
 export interface Instance {
     id: string;
@@ -34,3 +37,7 @@ export interface DirtyInstance {
     instance: Instance;
     element: Elem;
 }
+export interface IdleDeadline {
+    timeRemaining: () => number;
+}
+export declare type IdleCallback = (deadline: IdleDeadline) => void;

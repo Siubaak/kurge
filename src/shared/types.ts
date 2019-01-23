@@ -1,5 +1,8 @@
 // function component type
-export type Component = (props: any) => Elem
+export interface Component {
+  (props: any): Elem
+  shouldUpdate?: (prevProps: Props, nextProps: Props) => boolean
+}
 
 // effect type
 export type Effect = () => void | (() => void)
@@ -53,3 +56,11 @@ export interface DirtyInstance {
   instance: Instance
   element: Elem
 }
+
+// resquestIdleCallback callback argument
+export interface IdleDeadline {
+  timeRemaining: () => number
+}
+
+// resquestIdleCallback callback
+export type IdleCallback = (deadline: IdleDeadline) => void

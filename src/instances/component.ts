@@ -64,13 +64,20 @@ export default class ComponentInstance implements Instance {
 
     nextElement = nextElement == null ? this.element : (nextElement as VDomNode)
 
-    this.stateId = 0
-    this.guardLeft = this.guards.length
-  
-    pushTarget(this.watcher)
-    reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props))
-    popTarget()
-    this.watcher.clean()
+    let shouldUpdate = true
+    if (is.function(this.component.shouldUpdate)) {
+      shouldUpdate = this.component.shouldUpdate(this.element.props, nextElement.props)
+    }
+
+    if (shouldUpdate) {
+      this.stateId = 0
+      this.guardLeft = this.guards.length
+    
+      pushTarget(this.watcher)
+      reconciler.enqueueUpdate(this.renderedInstance, this.component(nextElement.props))
+      popTarget()
+      this.watcher.clean()
+    }
 
     this.element = nextElement
   }

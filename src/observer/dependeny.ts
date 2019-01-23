@@ -5,8 +5,14 @@ let uid: number = 0
 
 export default class Dependency {
   static target: Watcher = null
+
   readonly id: number = uid++
   readonly list: Watcher[] = []
+  private readonly specificWatcher: Watcher
+
+  constructor(specificWatcher: Watcher = null) {
+    this.specificWatcher = specificWatcher
+  }
 
   // subscribe a watcher to this dependency
   subscribe(watcher: Watcher) {
@@ -19,9 +25,16 @@ export default class Dependency {
   }
 
   // collect this dependency into the target watcher dependency list
-  // and build relation between this dependency and the target watcher 
+  // and build relation between this dependency and the target watcher
+  // if this dependency has specific watcher, only collect the relative watcher
   collect() {
-    if (Dependency.target) {
+    if (
+      Dependency.target &&
+      (
+        !this.specificWatcher ||
+        this.specificWatcher && this.specificWatcher === Dependency.target
+      )
+    ) {
       Dependency.target.depend(this)
     }
   }
