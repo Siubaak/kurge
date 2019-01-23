@@ -32,7 +32,7 @@ export function delArrItem(arr: any[], item: any): any[] | void {
 }
 
 // simple requestIdleCallback polyfill
-function rICB(callback: IdleCallback) {
+function requestIdleCallbackPolyfill(callback: IdleCallback) {
   const start = Date.now()
   return requestAnimationFrame(() => {
     callback({
@@ -40,4 +40,5 @@ function rICB(callback: IdleCallback) {
     })
   })
 }
-export const nextTick: (callback: IdleCallback) => number = (window as any).requestIdleCallback || rICB
+export const nextTick: (callback: IdleCallback) => number
+  = (window as any).requestIdleCallback || requestIdleCallbackPolyfill

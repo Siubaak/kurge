@@ -3,7 +3,9 @@ import Dependency from './dependeny'
 import Watcher from './watcher'
 
 export default function observe(data: any, specificWatcher: Watcher = null) {
-  if (!is.object(data) && !is.array(data)) {
+  if (is.function(data)) {
+    throw new Error('function can\'t be observed')
+  } else if (!is.object(data) && !is.array(data)) {
     data = { value: data }
   }
   for (const key in data) {
