@@ -14,3 +14,5 @@ export declare const is: {
 export declare function hasOwn(object: any, property: string | number | symbol): any;
 export declare function delArrItem(arr: any[], item: any): any[] | void;
 export declare const nextTick: (callback: IdleCallback) => number;
+export declare function getProto(object: any): any;
+export declare function setProto(object: any, proto: any): boolean;

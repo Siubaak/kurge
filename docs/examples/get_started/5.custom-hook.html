@@ -8,24 +8,26 @@
 </head>
 <body>
   <div id="app"></div>
-  <script src="../../proxy.polyfill.js"></script>
-  <script src="kurge_1.1.1.js"></script>
+  <script src="kurge.js"></script>
   <script>
-    const { render, useState, createElement: h, useEffect } = Kurge
+    var render = Kurge.render
+    var useState = Kurge.useState
+    var useEffect = Kurge.useEffect
+    var h = Kurge.createElement
 
     function useCount() {
       const count = useState(0)
-      useEffect(() => {
+      useEffect(function () {
         document.title = 'Counter mounted'
       }, [])
       return count
     }
 
     function app() {
-      const count = useCount()
+      var count = useCount()
       return h('div', {},
-        h('p', null, `You clicked ${count.value} times`),
-        h('button', { onClick: () => count.value++ }, 'Click me')
+        h('p', null, 'You clicked ' + count.value + ' times'),
+        h('button', { onClick: function () { count.value++ } }, 'Click me')
       )
     }
 

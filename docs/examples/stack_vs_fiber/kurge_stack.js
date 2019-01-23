@@ -29,17 +29,26 @@
           }
       }
   }
-  function requestIdleCallbackPolyfill(callback) {
-      var start = Date.now();
-      return requestAnimationFrame(function () {
-          callback({
-              timeRemaining: function () { return Math.max(0, 50 - (Date.now() - start)); }
-          });
-      });
+  var nextTick = requestAnimationFrame;
+  function getProto(object) {
+      return Object.getPrototypeOf(object) || object.__proto__ || null;
   }
-  var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
+  function setProto(object, proto) {
+      if (Object.setPrototypeOf) {
+          Object.setPrototypeOf(object, proto);
+          return true;
+      }
+      else if (object.__proto__) {
+          object.__proto__ = proto;
+          return true;
+      }
+      else {
+          return false;
+      }
+  }
 
   var DATA_ID = 'data-kgid';
+  var DEP_SYMBOL = Math.random().toString(36).substr(2);
   var RESERVED_PROPS = { key: true, ref: true };
   var eventHandlers = Object.keys(window || {}).filter(function (key) { return /^on/.test(key); });
   var SUPPORTED_LISTENERS = {};
@@ -446,7 +455,7 @@
       Reconciler.prototype.runBatchUpdate = function () {
           var _this = this;
           this.isBatchUpdating = true;
-          var batchUpdate = function (deadline) {
+          var batchUpdate = function () {
               var _loop_1 = function () {
                   var _a = _this.dirtyInstanceSet.shift(), instance = _a.instance, element = _a.element;
                   if (instance.id) {
@@ -460,15 +469,10 @@
                       }
                   }
               };
-              while (deadline.timeRemaining() > 0 && _this.dirtyInstanceSet.length) {
+              while (_this.dirtyInstanceSet.length) {
                   _loop_1();
               }
-              if (_this.dirtyInstanceSet.length) {
-                  nextTick(batchUpdate);
-              }
-              else {
-                  _this.isBatchUpdating = false;
-              }
+              _this.isBatchUpdating = false;
               emitter.emit('updated');
           };
           nextTick(batchUpdate);
@@ -820,6 +824,115 @@
       emitter.emit('mounted');
   }
 
+  var mutatedMethods = [
+      'push',
+      'pop',
+      'shift',
+      'unshift',
+      'splice',
+      'sort',
+      'reverse'
+  ];
+  var ProxyPolyfill = (function () {
+      function ProxyPolyfill(target, handler) {
+          var isArray = is.array(target);
+          var proxy = {};
+          function getter(p) {
+              if (isArray && mutatedMethods.indexOf(p) > -1) {
+                  var origin_1 = handler.get(target, p, proxy);
+                  return function () {
+                      var args = [];
+                      for (var _i = 0; _i < arguments.length; _i++) {
+                          args[_i] = arguments[_i];
+                      }
+                      switch (p) {
+                          case 'push':
+                          case 'unshift':
+                              for (var i = 0; i < args.length; i++) {
+                                  if (is.object(args[i]) || is.array(args[i])) {
+                                      args[i] = observe(args[i], handler.get(target, DEP_SYMBOL, proxy).specificWatcher);
+                                  }
+                                  var index = handler.get(target, 'length', proxy) + i;
+                                  Object.defineProperty(proxy, index, {
+                                      configurable: true,
+                                      enumerable: true,
+                                      get: getter.bind(target, index),
+                                      set: setter.bind(target, index)
+                                  });
+                              }
+                              break;
+                          case 'pop':
+                          case 'shift':
+                              delete proxy[handler.get(target, 'length', proxy) - 1];
+                              break;
+                          case 'splice':
+                              var remove = args[1];
+                              for (var i = 2; i < args.length; i++) {
+                                  if (is.object(args[i]) || is.array(args[i])) {
+                                      args[i] = observe(args[i], handler.get(target, DEP_SYMBOL, proxy).specificWatcher);
+                                  }
+                              }
+                              for (var i = 0; i < remove; i++) {
+                                  delete proxy[handler.get(target, 'length', proxy) - 1 - i];
+                              }
+                              break;
+                      }
+                      var result = origin_1.apply(target, args);
+                      handler.get(target, DEP_SYMBOL, proxy).notify();
+                      return result;
+                  };
+              }
+              else {
+                  return handler.get(target, p, proxy);
+              }
+          }
+          function setter(p, v) {
+              handler.set(target, p, v, proxy);
+          }
+          var propertyMap = Object.create(null);
+          var proto = target;
+          while (proto) {
+              Object.getOwnPropertyNames(proto).forEach(function (prop) {
+                  if (!propertyMap[prop]) {
+                      var descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+                      Object.defineProperty(proxy, prop, {
+                          configurable: descriptor.configurable,
+                          enumerable: descriptor.enumerable,
+                          get: getter.bind(target, prop),
+                          set: setter.bind(target, prop)
+                      });
+                      propertyMap[prop] = true;
+                  }
+              });
+              proto = getProto(proto);
+          }
+          setProto(proxy, getProto(target));
+          return proxy;
+      }
+      return ProxyPolyfill;
+  }());
+  if (!window.Proxy) {
+      console.warn('Proxy isn\'t natively supported, and Kurge will use built-in polyfill instead');
+  }
+  var Proxy = window.Proxy || ProxyPolyfill;
+
+  var ReflectPolyfill = {
+      get: function (target, property) {
+          return target[property];
+      },
+      set: function (target, property, value) {
+          target[property] = value;
+          return true;
+      },
+      defineProperty: function (target, property, descriptor) {
+          return Object.defineProperty(target, property, descriptor);
+      },
+      deleteProperty: function (target, property) {
+          return delete target[property];
+      }
+  };
+  var Reflect = window.Reflect || ReflectPolyfill;
+
   function observe(data, specificWatcher) {
       if (specificWatcher === void 0) { specificWatcher = null; }
       if (is.function(data)) {
@@ -836,28 +949,41 @@
           }
       }
       var dep = new Dependency(specificWatcher);
-      return new Proxy(data, {
+      var handler = {
           get: function (target, property) {
+              if (property === DEP_SYMBOL) {
+                  return dep;
+              }
               if (hasOwn(target, property)) {
                   dep.collect();
               }
-              return target[property];
+              return Reflect.get(target, property);
           },
           set: function (target, property, value) {
+              if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
+                  value = observe(value, specificWatcher);
+              }
               if ((hasOwn(target, property) || is.undefined(target[property])) &&
                   value !== target[property]) {
                   dep.notify();
               }
-              target[property] = value;
-              return true;
+              return Reflect.set(target, property, value);
+          },
+          defineProperty: function (target, property, descriptor) {
+              if ((hasOwn(target, property) || is.undefined(target[property])) &&
+                  descriptor.value !== target[property]) {
+                  dep.notify();
+              }
+              return Reflect.defineProperty(target, property, descriptor);
           },
           deleteProperty: function (target, property) {
               if (hasOwn(target, property)) {
                   dep.notify();
               }
-              return delete target[property];
+              return Reflect.deleteProperty(target, property);
           }
-      });
+      };
+      return new Proxy(data, handler);
   }
 
   function createContext(ctx) {

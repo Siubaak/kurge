@@ -8,7 +8,7 @@ export default class Dependency {
 
   readonly id: number = uid++
   readonly list: Watcher[] = []
-  private readonly specificWatcher: Watcher
+  readonly specificWatcher: Watcher
 
   constructor(specificWatcher: Watcher = null) {
     this.specificWatcher = specificWatcher

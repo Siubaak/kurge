@@ -3,6 +3,7 @@ import Dependency from './dependeny'
 import Watcher from './watcher'
 import Proxy from './polyfill/proxy'
 import Reflect from './polyfill/reflect'
+import { DEP_SYMBOL } from '../shared/constants'
 
 export default function observe(data: any, specificWatcher: Watcher = null) {
   if (is.function(data)) {
@@ -20,6 +21,9 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
   const dep: Dependency = new Dependency(specificWatcher)
   const handler: ProxyHandler<any> = {
     get(target, property) {
+      if (property === DEP_SYMBOL) {
+        return dep
+      }
       if (hasOwn(target, property)) {
         // collect dependencies
         dep.collect()
@@ -27,6 +31,9 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
       return Reflect.get(target, property)
     },
     set(target, property, value) {
+      if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
+        value = observe(value, specificWatcher)
+      }
       if (
         (hasOwn(target, property) || is.undefined(target[property])) &&
         value !== target[property]

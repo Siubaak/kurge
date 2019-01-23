@@ -56,6 +56,7 @@
   }
 
   var DATA_ID = 'data-kgid';
+  var DEP_SYMBOL = Math.random().toString(36).substr(2);
   var RESERVED_PROPS = { key: true, ref: true };
   var eventHandlers = Object.keys(window || {}).filter(function (key) { return /^on/.test(key); });
   var SUPPORTED_LISTENERS = {};
@@ -836,7 +837,6 @@
       emitter.emit('mounted');
   }
 
-  var arrayProto = Array.prototype;
   var mutatedMethods = [
       'push',
       'pop',
@@ -848,64 +848,67 @@
   ];
   var ProxyPolyfill = (function () {
       function ProxyPolyfill(target, handler) {
+          var isArray = is.array(target);
           var proxy = {};
           function getter(p) {
-              return handler.get(this, p, proxy);
+              if (isArray && mutatedMethods.indexOf(p) > -1) {
+                  var origin_1 = handler.get(target, p, proxy);
+                  return function () {
+                      var args = [];
+                      for (var _i = 0; _i < arguments.length; _i++) {
+                          args[_i] = arguments[_i];
+                      }
+                      switch (p) {
+                          case 'push':
+                          case 'unshift':
+                              for (var i = 0; i < args.length; i++) {
+                                  if (is.object(args[i]) || is.array(args[i])) {
+                                      args[i] = observe(args[i], handler.get(target, DEP_SYMBOL, proxy).specificWatcher);
+                                  }
+                                  var index = handler.get(target, 'length', proxy) + i;
+                                  Object.defineProperty(proxy, index, {
+                                      configurable: true,
+                                      enumerable: true,
+                                      get: getter.bind(target, index),
+                                      set: setter.bind(target, index)
+                                  });
+                              }
+                              break;
+                          case 'pop':
+                          case 'shift':
+                              delete proxy[handler.get(target, 'length', proxy) - 1];
+                              break;
+                          case 'splice':
+                              var remove = args[1];
+                              for (var i = 2; i < args.length; i++) {
+                                  if (is.object(args[i]) || is.array(args[i])) {
+                                      args[i] = observe(args[i], handler.get(target, DEP_SYMBOL, proxy).specificWatcher);
+                                  }
+                              }
+                              for (var i = 0; i < remove; i++) {
+                                  delete proxy[handler.get(target, 'length', proxy) - 1 - i];
+                              }
+                              break;
+                      }
+                      var result = origin_1.apply(target, args);
+                      handler.get(target, DEP_SYMBOL, proxy).notify();
+                      return result;
+                  };
+              }
+              else {
+                  return handler.get(target, p, proxy);
+              }
           }
           function setter(p, v) {
-              handler.set(this, p, v, proxy);
+              handler.set(target, p, v, proxy);
           }
-          var propertyMap = {};
-          Object.getOwnPropertyNames(target).forEach(function (prop) {
-              var descriptor = Object.getOwnPropertyDescriptor(target, prop);
-              Object.defineProperty(proxy, prop, {
-                  configurable: descriptor.configurable,
-                  enumerable: descriptor.enumerable,
-                  get: getter.bind(target, prop),
-                  set: setter.bind(target, prop)
-              });
-              propertyMap[prop] = true;
-          });
-          var proxyProto = Object.create(getProto(target));
-          setProto(proxy, proxyProto);
-          var proto = proxyProto;
-          if (is.array(target)) {
-              mutatedMethods.forEach(function (method) {
-                  propertyMap[method] = true;
-                  Object.defineProperty(proto, method, {
-                      value: function () {
-                          var args = [];
-                          for (var _i = 0; _i < arguments.length; _i++) {
-                              args[_i] = arguments[_i];
-                          }
-                          var observeStart = null;
-                          switch (method) {
-                              case 'push':
-                              case 'unshift':
-                                  observeStart = 0;
-                                  break;
-                              case 'splice':
-                                  observeStart = 2;
-                                  break;
-                          }
-                          if (is.number(observeStart)) {
-                              for (var i = observeStart; i < args.length; i++) {
-                                  args[i] = observe(args[i], Dependency.target);
-                              }
-                          }
-                          return arrayProto[method].apply(this, args);
-                      },
-                      configurable: true,
-                      enumerable: false,
-                      writable: true
-                  });
-              });
-          }
+          var propertyMap = Object.create(null);
+          var proto = target;
           while (proto) {
               Object.getOwnPropertyNames(proto).forEach(function (prop) {
                   if (!propertyMap[prop]) {
                       var descriptor = Object.getOwnPropertyDescriptor(proto, prop);
-                      Object.defineProperty(proxyProto, prop, {
+                      Object.defineProperty(proxy, prop, {
                           configurable: descriptor.configurable,
                           enumerable: descriptor.enumerable,
                           get: getter.bind(target, prop),
@@ -916,10 +919,14 @@
               });
               proto = getProto(proto);
           }
+          setProto(proxy, getProto(target));
           return proxy;
       }
       return ProxyPolyfill;
   }());
+  if (!window.Proxy) {
+      console.warn('Proxy isn\'t natively supported, and Kurge will use built-in polyfill instead');
+  }
   var Proxy = window.Proxy || ProxyPolyfill;
 
   var ReflectPolyfill = {
@@ -957,12 +964,18 @@
       var dep = new Dependency(specificWatcher);
       var handler = {
           get: function (target, property) {
+              if (property === DEP_SYMBOL) {
+                  return dep;
+              }
               if (hasOwn(target, property)) {
                   dep.collect();
               }
               return Reflect.get(target, property);
           },
           set: function (target, property, value) {
+              if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
+                  value = observe(value, specificWatcher);
+              }
               if ((hasOwn(target, property) || is.undefined(target[property])) &&
                   value !== target[property]) {
                   dep.notify();
