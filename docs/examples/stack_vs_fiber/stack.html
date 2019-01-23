@@ -129,19 +129,33 @@
       
       var start = Date.now()
       function ExampleApplication(props) {
+        var animation = useState(0)
         var seconds = useState(0)
 
         function tick() {
           seconds.value = (seconds.value % 10) + 1
         }
-        useEffect(function () { requestAnimationFrame(tick) })
+        useEffect(function () {
+          var id = setTimeout(tick, 1000)
+          return function () {
+            clearTimeout(id)
+          }
+        }, [seconds.value])
+        function change() {
+          animation.value++
+        }
+        useEffect(function () {
+          var id = requestAnimationFrame(change, 17)
+          return function () {
+            cancelAnimationFrame(id)
+          }
+        }, [animation.value])
         
         var elapsed = Date.now() - start
         var t = (elapsed / 1000) % 10
         var scale = 1 + (t > 5 ? 10 - t : t) / 10
         var transform = 'scaleX(' + (scale / 2.1) + ') scaleY(0.7) translateZ(0.1px)'
 
-        var style
         return (
           h('div', { id: 'app', style: Object.assign({}, containerStyle, { transform: transform }) },
             h('div', null,
