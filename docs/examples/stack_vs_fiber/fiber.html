@@ -126,6 +126,16 @@
           }, children)
         )
       }
+      SierpinskiTriangle.shouldUpdate = function(oldProps, newProps) {
+        var o = oldProps;
+        var n = newProps;
+        return !(
+          o.x === n.x &&
+          o.y === n.y &&
+          o.s === n.s &&
+          o.children === n.children
+        )
+      }
       
       var start = Date.now()
       function ExampleApplication(props) {
