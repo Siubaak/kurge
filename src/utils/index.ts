@@ -43,6 +43,11 @@ function requestIdleCallbackPolyfill(callback: IdleCallback) {
 export const nextTick: (callback: IdleCallback) => number
   = (window as any).requestIdleCallback || requestIdleCallbackPolyfill
 
+// polyfill of getPrototypeOf
+export function getProto(object: any): any {
+  return Object.getPrototypeOf(object) || object.__proto__ || null
+}
+
 // polyfill of setPrototypeOf
 export function setProto(object: any, proto: any): boolean {
   if ((Object as any).setPrototypeOf) {

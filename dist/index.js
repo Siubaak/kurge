@@ -38,6 +38,9 @@
       });
   }
   var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
+  function getProto(object) {
+      return Object.getPrototypeOf(object) || object.__proto__ || null;
+  }
   function setProto(object, proto) {
       if (Object.setPrototypeOf) {
           Object.setPrototypeOf(object, proto);
@@ -843,87 +846,75 @@
       'sort',
       'reverse'
   ];
-  function createMutatedArray(handler) {
-      var mutatedArray = [];
-      Object.defineProperty(mutatedArray, '__updateId__', {
-          value: 0,
-          enumerable: false,
-          configurable: true,
-          writable: true
-      });
-      var mutatedArrayProto = Object.create(arrayProto);
-      setProto(mutatedArray, mutatedArrayProto);
-      mutatedMethods.forEach(function (method) {
-          Object.defineProperty(mutatedArrayProto, method, {
-              value: function () {
-                  var args = [];
-                  for (var _i = 0; _i < arguments.length; _i++) {
-                      args[_i] = arguments[_i];
-                  }
-                  var observeStart = null;
-                  switch (method) {
-                      case 'push':
-                      case 'unshift':
-                          observeStart = 0;
-                          break;
-                      case 'splice':
-                          observeStart = 2;
-                          break;
-                  }
-                  if (is.number(observeStart)) {
-                      for (var i = observeStart; i < args.length; i++) {
-                          args[i] = observe(args[i]);
-                      }
-                  }
-                  console.log(1);
-                  handler.set(mutatedArray, '__updateId__', mutatedArray.__updateId__++, null);
-                  return arrayProto[method].apply(this, args);
-              },
-              configurable: true,
-              enumerable: false,
-              writable: true
-          });
-      });
-      return mutatedArray;
-  }
   var ProxyPolyfill = (function () {
       function ProxyPolyfill(target, handler) {
-          var isArray = is.array(target);
-          var proxy = isArray ? createMutatedArray(handler) : {};
-          var propertyMap = {};
-          var getter = function (p) {
+          var proxy = {};
+          function getter(p) {
               return handler.get(this, p, proxy);
-          };
-          var setter = function (p, v) {
+          }
+          function setter(p, v) {
               handler.set(this, p, v, proxy);
-          };
-          console.log(Object.getOwnPropertyNames(target));
+          }
+          var propertyMap = {};
           Object.getOwnPropertyNames(target).forEach(function (prop) {
-              var oriDescriptor = Object.getOwnPropertyDescriptor(target, prop);
-              if (oriDescriptor.configurable) {
-                  Object.defineProperty(proxy, prop, {
-                      enumerable: !!oriDescriptor.enumerable,
-                      get: getter.bind(target, prop),
-                      set: setter.bind(target, prop)
-                  });
-              }
+              var descriptor = Object.getOwnPropertyDescriptor(target, prop);
+              Object.defineProperty(proxy, prop, {
+                  configurable: descriptor.configurable,
+                  enumerable: descriptor.enumerable,
+                  get: getter.bind(target, prop),
+                  set: setter.bind(target, prop)
+              });
               propertyMap[prop] = true;
           });
-          var targetProto = Object.getPrototypeOf ? Object.getPrototypeOf(target) : target.__proto__;
-          var prototypeOk = false;
-          if (isArray) {
-              var mutatedArrayProto = Object.getPrototypeOf ? Object.getPrototypeOf(proxy) : proxy.__proto__;
-              prototypeOk = setProto(mutatedArrayProto, targetProto);
+          var proxyProto = Object.create(getProto(target));
+          setProto(proxy, proxyProto);
+          var proto = proxyProto;
+          if (is.array(target)) {
+              mutatedMethods.forEach(function (method) {
+                  propertyMap[method] = true;
+                  Object.defineProperty(proto, method, {
+                      value: function () {
+                          var args = [];
+                          for (var _i = 0; _i < arguments.length; _i++) {
+                              args[_i] = arguments[_i];
+                          }
+                          var observeStart = null;
+                          switch (method) {
+                              case 'push':
+                              case 'unshift':
+                                  observeStart = 0;
+                                  break;
+                              case 'splice':
+                                  observeStart = 2;
+                                  break;
+                          }
+                          if (is.number(observeStart)) {
+                              for (var i = observeStart; i < args.length; i++) {
+                                  args[i] = observe(args[i], Dependency.target);
+                              }
+                          }
+                          return arrayProto[method].apply(this, args);
+                      },
+                      configurable: true,
+                      enumerable: false,
+                      writable: true
+                  });
+              });
           }
-          else {
-              prototypeOk = setProto(proxy, targetProto);
-          }
-          if (handler.get || !prototypeOk) {
-              for (var key in target) {
-                  if (!propertyMap[key]) {
-                      Object.defineProperty(proxy, key, { get: getter.bind(target, key) });
+          while (proto) {
+              Object.getOwnPropertyNames(proto).forEach(function (prop) {
+                  if (!propertyMap[prop]) {
+                      var descriptor = Object.getOwnPropertyDescriptor(proto, prop);
+                      Object.defineProperty(proxyProto, prop, {
+                          configurable: descriptor.configurable,
+                          enumerable: descriptor.enumerable,
+                          get: getter.bind(target, prop),
+                          set: setter.bind(target, prop)
+                      });
+                      propertyMap[prop] = true;
                   }
-              }
+              });
+              proto = getProto(proto);
           }
           return proxy;
       }
