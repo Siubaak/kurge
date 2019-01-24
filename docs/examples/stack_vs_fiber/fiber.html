@@ -8,10 +8,6 @@
   <body>
     <h1>Kurge Fiber Example</h1>
     <div id="app"></div>
-    <script src="vconsole.min.js"></script>
-    <script>
-      new VConsole()
-    </script>
     <script src="kurge_fiber.js"></script>
     <script>
       if (typeof Object.assign != 'function') {
@@ -155,7 +151,7 @@
           animation.value++
         }
         useEffect(function () {
-          var id = requestAnimationFrame(change, 17)
+          var id = requestAnimationFrame(change)
           return function () {
             cancelAnimationFrame(id)
           }
