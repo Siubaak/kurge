@@ -7,9 +7,6 @@ const ReflectPolyfill = {
     target[property] = value
     return true
   },
-  defineProperty(target: any, property: string | number | symbol, descriptor: PropertyDescriptor): boolean {
-    return Object.defineProperty(target, property, descriptor)
-  },
   deleteProperty(target: any, property: string | number | symbol): boolean {
     return delete target[property]
   }

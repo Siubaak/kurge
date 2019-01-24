@@ -31,27 +31,17 @@ export default function observe(data: any, specificWatcher: Watcher = null) {
       return Reflect.get(target, property)
     },
     set(target, property, value) {
-      if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
-        value = observe(value, specificWatcher)
-      }
       if (
         (hasOwn(target, property) || is.undefined(target[property])) &&
         value !== target[property]
       ) {
+        if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
+          value = observe(value, specificWatcher)
+        }
         // notify watchers
         dep.notify()
       }
       return Reflect.set(target, property, value)
-    },
-    defineProperty(target, property, descriptor) {
-      if (
-        (hasOwn(target, property) || is.undefined(target[property])) &&
-        descriptor.value !== target[property]
-      ) {
-        // notify watchers
-        dep.notify()
-      }
-      return Reflect.defineProperty(target, property, descriptor);
     },
     deleteProperty(target, property) {
       if (hasOwn(target, property)) {
