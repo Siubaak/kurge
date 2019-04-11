@@ -80,7 +80,7 @@ export default class DOMInstance implements Instance {
       if (this.node) {
         this.node.removeAttribute(DATA_ID)
       }
-    })      
+    })
 
     return markup
   }

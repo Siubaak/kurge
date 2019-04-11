@@ -3,7 +3,8 @@
   "version": "1.1.1",
   "description": "a reactive function component based javascript ui binding library",
   "types": "types/index.d.ts",
-  "main": "index.js",
+  "unpkg": "dist/kurge.min.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "npm test && rm -rf dist types && rollup -c && npm run move:types",
     "dev": "rollup -wc",

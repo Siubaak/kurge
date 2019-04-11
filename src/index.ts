@@ -8,7 +8,7 @@ import useEffect from './hooks/effect'
 
 import { version } from '../package.json'
 
-const Kurge = {
+export default {
   // kurge info
   version,
   // top-level methods
@@ -20,5 +20,3 @@ const Kurge = {
   useRefs,
   useEffect
 }
-
-export default Kurge
