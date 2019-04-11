@@ -181,71 +181,6 @@
       return TextInstance;
   }());
 
-  var Heap = (function () {
-      function Heap(compare) {
-          this.arr = [];
-          this.compare = compare;
-      }
-      Object.defineProperty(Heap.prototype, "length", {
-          get: function () {
-              return this.arr.length;
-          },
-          enumerable: true,
-          configurable: true
-      });
-      Heap.prototype.push = function (item) {
-          this.arr.push(item);
-          this.promote(this.arr.length - 1);
-      };
-      Heap.prototype.shift = function () {
-          var m;
-          if (this.arr.length > 1) {
-              m = this.arr[0];
-              this.arr[0] = this.arr.pop();
-              this.heapify(0);
-          }
-          else {
-              m = this.arr.pop();
-          }
-          return m;
-      };
-      Heap.prototype.heapify = function (i) {
-          var _a;
-          var l = this.left(i);
-          var r = this.right(i);
-          var m = i;
-          if (this.arr[l] && this.compare(this.arr[l], this.arr[i])) {
-              m = l;
-          }
-          if (this.arr[r] && this.compare(this.arr[r], this.arr[i])) {
-              m = r;
-          }
-          if (m !== i) {
-              _a = [this.arr[m], this.arr[i]], this.arr[i] = _a[0], this.arr[m] = _a[1];
-              this.heapify(m);
-          }
-      };
-      Heap.prototype.promote = function (i) {
-          var _a;
-          var p = this.parent(i);
-          while (this.arr[p] && this.compare(this.arr[p], this.arr[i])) {
-              _a = [this.arr[p], this.arr[i]], this.arr[i] = _a[0], this.arr[p] = _a[1];
-              i = p;
-              p = this.parent(i);
-          }
-      };
-      Heap.prototype.parent = function (i) {
-          return Math.floor((i + 1) / 2) - 1;
-      };
-      Heap.prototype.left = function (i) {
-          return 2 * (i + 1) - 1;
-      };
-      Heap.prototype.right = function (i) {
-          return 2 * (i + 1);
-      };
-      return Heap;
-  }());
-
   var wid = 0;
   var Watcher = (function () {
       function Watcher(instance) {
@@ -281,7 +216,7 @@
           this.newList.length = 0;
       };
       Watcher.prototype.update = function () {
-          reconciler.enqueueUpdate(this.instance);
+          reconciler.enqueueSetState(this.instance);
       };
       return Watcher;
   }());
@@ -419,68 +354,70 @@
       return ComponentInstance;
   }());
 
-  var DirtyInstanceSet = (function () {
-      function DirtyInstanceSet() {
+  var DirtyList = (function () {
+      function DirtyList() {
           this.map = {};
-          this.arr = new Heap(function (contrast, self) {
-              return contrast.split(':').length < self.split(':').length;
-          });
+          this.arr = [];
       }
-      Object.defineProperty(DirtyInstanceSet.prototype, "length", {
+      Object.defineProperty(DirtyList.prototype, "first", {
           get: function () {
-              return this.arr.length;
+              return this.map[this.arr[0]];
           },
           enumerable: true,
           configurable: true
       });
-      DirtyInstanceSet.prototype.push = function (dirtyInstance) {
-          var id = dirtyInstance.instance.id;
+      DirtyList.prototype.push = function (componentInst) {
+          var id = componentInst.id;
           if (!this.map[id]) {
               this.arr.push(id);
           }
-          this.map[id] = dirtyInstance;
+          this.map[id] = [{ instance: componentInst, element: null }];
       };
-      DirtyInstanceSet.prototype.shift = function () {
-          var id = this.arr.shift();
-          var dirtyInstance = this.map[id];
-          delete this.map[id];
-          return dirtyInstance;
+      DirtyList.prototype.shift = function () {
+          delete this.map[this.arr.shift()];
       };
-      return DirtyInstanceSet;
+      return DirtyList;
   }());
   var Reconciler = (function () {
       function Reconciler() {
-          this.dirtyInstanceSet = new DirtyInstanceSet();
+          this.dirtyList = new DirtyList();
           this.isBatchUpdating = false;
       }
-      Reconciler.prototype.enqueueUpdate = function (instance, element) {
-          if (element === void 0) { element = null; }
-          this.dirtyInstanceSet.push({ instance: instance, element: element });
+      Reconciler.prototype.enqueueSetState = function (componentInst) {
+          this.dirtyList.push(componentInst);
           if (!this.isBatchUpdating) {
               this.runBatchUpdate();
           }
+      };
+      Reconciler.prototype.enqueueUpdate = function (instance, element) {
+          this.dirtyList.first.push({ instance: instance, element: element });
       };
       Reconciler.prototype.runBatchUpdate = function () {
           var _this = this;
           this.isBatchUpdating = true;
           var batchUpdate = function (deadline) {
               var _loop_1 = function () {
-                  var _a = _this.dirtyInstanceSet.shift(), instance = _a.instance, element = _a.element;
-                  if (instance.id) {
-                      instance.update(element);
-                      if (instance instanceof ComponentInstance) {
-                          emitter.on('updated', function () {
-                              if (instance.node) {
-                                  emitter.emit("updated:" + instance.id);
-                              }
-                          });
+                  if (_this.dirtyList.first.length) {
+                      var _a = _this.dirtyList.first.shift(), instance_1 = _a.instance, element = _a.element;
+                      if (instance_1.id) {
+                          instance_1.update(element);
+                          if (instance_1 instanceof ComponentInstance) {
+                              emitter.on('updated', function () {
+                                  if (instance_1.node) {
+                                      emitter.emit("updated:" + instance_1.id);
+                                  }
+                              });
+                          }
                       }
                   }
+                  else {
+                      _this.dirtyList.shift();
+                  }
               };
-              while (deadline.timeRemaining() > 0 && _this.dirtyInstanceSet.length) {
+              while (deadline.timeRemaining() > 0 && _this.dirtyList.first) {
                   _loop_1();
               }
-              if (_this.dirtyInstanceSet.length) {
+              if (_this.dirtyList.first) {
                   nextTick(batchUpdate);
               }
               else {
@@ -937,9 +874,6 @@
           target[property] = value;
           return true;
       },
-      defineProperty: function (target, property, descriptor) {
-          return Object.defineProperty(target, property, descriptor);
-      },
       deleteProperty: function (target, property) {
           return delete target[property];
       }
@@ -973,21 +907,14 @@
               return Reflect.get(target, property);
           },
           set: function (target, property, value) {
-              if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
-                  value = observe(value, specificWatcher);
-              }
               if ((hasOwn(target, property) || is.undefined(target[property])) &&
                   value !== target[property]) {
+                  if ((is.object(value) || is.array(value)) && !value[DEP_SYMBOL]) {
+                      value = observe(value, specificWatcher);
+                  }
                   dep.notify();
               }
               return Reflect.set(target, property, value);
-          },
-          defineProperty: function (target, property, descriptor) {
-              if ((hasOwn(target, property) || is.undefined(target[property])) &&
-                  descriptor.value !== target[property]) {
-                  dep.notify();
-              }
-              return Reflect.defineProperty(target, property, descriptor);
           },
           deleteProperty: function (target, property) {
               if (hasOwn(target, property)) {
@@ -1088,7 +1015,7 @@
 
   var version = "1.1.1";
 
-  var Kurge = {
+  var index = {
       version: version,
       render: render,
       createElement: createElement,
@@ -1098,6 +1025,6 @@
       useEffect: useEffect
   };
 
-  return Kurge;
+  return index;
 
 }));

@@ -1,4 +1,4 @@
-import React, { useRefs, useEffect } from '../../..'
+import React, { useRefs, useEffect } from '../../../dist'
 import useI18N from '../hooks/i18n'
 import TodoList from '../todo-list'
 import hljs from 'highlightjs'

@@ -33,7 +33,7 @@ export interface PatchOp {
     inst: Instance;
     index?: number;
 }
-export interface DirtyInstance {
+export interface Update {
     instance: Instance;
     element: Elem;
 }

@@ -1,4 +1,4 @@
-import React from '../..'
+import React from '../../dist'
 import Banner from './banner'
 import Content from './content'
 import Footer from './footer'

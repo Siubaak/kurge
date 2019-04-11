@@ -6,7 +6,8 @@
   "unpkg": "dist/kurge.min.js",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npm test && rm -rf dist types && rollup -c && npm run move:types",
+    "build": "npm test && npm start",
+    "start": "rm -rf dist types && rollup -c && npm run move:types",
     "dev": "rollup -wc",
     "test": "jest --colors --coverage",
     "cov": "cat coverage/lcov.info | coveralls",

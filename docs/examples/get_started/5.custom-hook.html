@@ -19,6 +19,7 @@
       const count = useState(0)
       useEffect(function () {
         document.title = 'Counter mounted'
+        console.log('Title Changed')
       }, [])
       return count
     }

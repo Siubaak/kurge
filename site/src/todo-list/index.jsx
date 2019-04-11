@@ -1,4 +1,4 @@
-import React, { useState } from '../../..'
+import React, { useState } from '../../../dist'
 import useI18N from '../hooks/i18n'
 import './todo-list.less'
 

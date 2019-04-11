@@ -51,8 +51,8 @@ export interface PatchOp {
   index?: number
 }
 
-// reconciler dirty instance set
-export interface DirtyInstance {
+// reconciler update
+export interface Update {
   instance: Instance
   element: Elem
 }

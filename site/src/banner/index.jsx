@@ -1,4 +1,4 @@
-import React from '../../..'
+import React from '../../../dist'
 import useI18N from '../hooks/i18n'
 import context from '../hooks/context'
 import './banner.less'

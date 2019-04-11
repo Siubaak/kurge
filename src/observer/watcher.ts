@@ -46,6 +46,6 @@ export default class Watcher {
 
   // update caused by dependencies
   update() {
-    reconciler.enqueueUpdate(this.instance)
+    reconciler.enqueueSetState(this.instance)
   }
 }

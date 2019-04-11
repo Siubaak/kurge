@@ -3,10 +3,14 @@ import { VDomNode } from '../../src/shared/types'
 import { diff, patch } from '../../src/renderer/diff'
 import DOMInstance from '../../src/instances/dom'
 import emitter from '../../src/utils/emitter'
+import reconciler from '../../src/renderer/reconciler'
 
 describe('test/diff.test.js', () => {
   const h = Kurge.createElement
   const oldList = getListEleArr([1, 2, 3, 4, 5])
+
+  reconciler['dirtyList']['arr'].push('tmp')
+  reconciler['dirtyList']['map'].tmp = []
 
   function getListEleArr(list: number[]): VDomNode[] {
     return list.map(i => h('div', { key: i }, i))

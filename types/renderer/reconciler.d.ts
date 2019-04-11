@@ -1,8 +1,10 @@
 import { Elem, Instance } from '../shared/types';
+import ComponentInstance from '../instances/component';
 declare class Reconciler {
-    private readonly dirtyInstanceSet;
+    private readonly dirtyList;
     private isBatchUpdating;
-    enqueueUpdate(instance: Instance, element?: Elem): void;
+    enqueueSetState(componentInst: ComponentInstance): void;
+    enqueueUpdate(instance: Instance, element: Elem): void;
     private runBatchUpdate;
 }
 declare const _default: Reconciler;
