@@ -3,9 +3,10 @@ import ComponentInstance from '../instances/component';
 declare class Reconciler {
     private readonly dirtyList;
     private isBatchUpdating;
+    priority: number;
     enqueueSetState(componentInst: ComponentInstance): void;
     enqueueUpdate(instance: Instance, element: Elem): void;
     private runBatchUpdate;
 }
-declare const _default: Reconciler;
-export default _default;
+declare const reconciler: Reconciler;
+export default reconciler;

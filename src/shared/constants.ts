@@ -12,3 +12,6 @@ const eventHandlers: string[] = Object.keys(window || {}).filter(key => /^on/.te
 
 export const SUPPORTED_LISTENERS: { [listener: string]: boolean } = {}
 eventHandlers.forEach((listener: string) => SUPPORTED_LISTENERS[listener] = true)
+
+// update priority
+export enum PRIORITY { EVENT, ANIMATION, TASK, NORMAL }

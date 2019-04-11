@@ -1,8 +1,8 @@
-import { is } from '../utils'
+import { is, eventHandlerWrapper } from '../utils'
 import { diff, patch } from '../renderer/diff'
 import { instantiate } from '../renderer'
 import reconciler from '../renderer/reconciler'
-import { DATA_ID, SUPPORTED_LISTENERS } from '../shared/constants'
+import { DATA_ID, SUPPORTED_LISTENERS, PRIORITY } from '../shared/constants'
 import { VDomNode, Elem, Instance } from '../shared/types'
 import { getNode, getClassString, getStyleString } from '../utils/dom'
 import Dependency from '../observer/dependeny'
@@ -50,7 +50,9 @@ export default class DOMInstance implements Instance {
         markup += `style="${getStyleString(props.style)}" `
       } else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(props[prop])) {
         // add event listener
-        emitter.on('loaded', () => (this.node as any)[prop.toLowerCase()] = props[prop])
+        emitter.on('loaded', () => {
+          (this.node as any)[prop.toLowerCase()] = eventHandlerWrapper(props[prop])
+        })
       } else {
         // assign any other properties
         markup += `${prop}="${props[prop]}" `
@@ -125,7 +127,7 @@ export default class DOMInstance implements Instance {
         const nextEventListener = nextProps[prop]
         if ((this.node as any)[prop.toLowerCase()] !== nextEventListener) {
           // replace a listener
-          (this.node as any)[prop.toLowerCase()] = nextEventListener
+          (this.node as any)[prop.toLowerCase()] = eventHandlerWrapper(nextEventListener)
         }
       } else {
         const nextAttr: any = nextProps[prop]

@@ -9,8 +9,11 @@ describe('test/diff.test.js', () => {
   const h = Kurge.createElement
   const oldList = getListEleArr([1, 2, 3, 4, 5])
 
-  reconciler['dirtyList']['arr'].push('tmp')
-  reconciler['dirtyList']['map'].tmp = []
+  reconciler['dirtyList']['arr'].push({
+    id: 'tmp',
+    priority: reconciler.priority,
+    current: []
+  })
 
   function getListEleArr(list: number[]): VDomNode[] {
     return list.map(i => h('div', { key: i }, i))

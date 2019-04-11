@@ -1,4 +1,6 @@
 import { IdleCallback } from '../shared/types'
+import { PRIORITY } from '../shared/constants'
+import reconciler from '../renderer/reconciler'
 
 // strict type validators
 const _toString = Object.prototype.toString
@@ -58,5 +60,14 @@ export function setProto(object: any, proto: any): boolean {
     return true
   } else {
     return false
+  }
+}
+
+// wrap event handler to promote priority
+export function eventHandlerWrapper(eventHandler: (...args: any[]) => void) {
+  return function () {
+    reconciler.priority = PRIORITY.EVENT
+    eventHandler.apply(this, arguments)
+    reconciler.priority = PRIORITY.TASK
   }
 }

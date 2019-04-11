@@ -53,8 +53,9 @@ export interface PatchOp {
 
 // reconciler update
 export interface Update {
-  instance: Instance
-  element: Elem
+  id: string
+  priority: number
+  current: { instance: Instance, element: Elem }[]
 }
 
 // resquestIdleCallback callback argument

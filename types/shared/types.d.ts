@@ -34,8 +34,12 @@ export interface PatchOp {
     index?: number;
 }
 export interface Update {
-    instance: Instance;
-    element: Elem;
+    id: string;
+    priority: number;
+    current: {
+        instance: Instance;
+        element: Elem;
+    }[];
 }
 export interface IdleDeadline {
     timeRemaining: () => number;

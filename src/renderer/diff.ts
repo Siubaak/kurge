@@ -38,7 +38,7 @@ export function diff(prevInstances: Instance[], nextChildren: Elem[]): Patches {
   let lastForwardIndex: number = -1
   // take the leftmost position of resumed node in previous node list as fixed point
   let lastBackwardIndex: number = prevInstances.length
-  for(let index: number = 0; index < nextInstances.length; ++index) {
+  for (let index: number = 0; index < nextInstances.length; index++) {
     // forward diff
     const forwardNextInstance = nextInstances[index]
     const forwardPrevInstance = prevInstanceMap[forwardNextInstance.key]
@@ -145,7 +145,7 @@ export function patch(parentInst: Instance, patches: Patches): void {
     } else {
       if (op.type === 'insert') {
         // insert, and use createNode to create dom node
-        ++insertNum
+        insertNum++
         const markup: string = op.inst.mount(`${parentInst.id}:${op.inst.key}`)
         const node = createNode(markup)
         const beforeNode = container.children[beforeIndex]
