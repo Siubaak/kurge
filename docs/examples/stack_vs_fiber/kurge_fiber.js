@@ -270,7 +270,9 @@
           }
       };
       Reconciler.prototype.enqueueUpdate = function (instance, element) {
-          this.dirtyList.current.push({ instance: instance, element: element });
+          if (this.dirtyList.current) {
+              this.dirtyList.current.push({ instance: instance, element: element });
+          }
       };
       Reconciler.prototype.runBatchUpdate = function () {
           var _this = this;
@@ -471,9 +473,8 @@
               var wrapper = getNode(_this.id);
               if (wrapper) {
                   _this.node = wrapper.firstChild;
-                  if (!_this.node) {
+                  if (!_this.node)
                       _this.node = createNode('');
-                  }
                   wrapper.parentNode.insertBefore(_this.node, wrapper);
                   wrapper.remove();
               }
@@ -692,9 +693,8 @@
               emitter.on('loaded', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
           }
           emitter.on('loaded', function () {
-              if (_this.node) {
+              if (_this.node)
                   _this.node.removeAttribute(DATA_ID);
-              }
           });
           return markup;
       };
@@ -1050,7 +1050,7 @@
           if (instance_1.node) {
               var prevGuard = instance_1.prevGuard;
               if (is.undefined(prevGuard)) {
-                  throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement');
+                  throw new Error('unmatch any effects, please don\'t call useEffect in if/loop statement');
               }
               var shouldCall = false;
               if (is.array(guard) && is.array(prevGuard) && guard.length === prevGuard.length) {
@@ -1087,7 +1087,7 @@
       }
   }
 
-  var version = "1.1.1";
+  var version = "1.1.2";
 
   var index = {
       version: version,
