@@ -57,7 +57,9 @@ class Reconciler {
   }
 
   enqueueUpdate(instance: Instance, element: Elem): void {
-    this.dirtyList.current.push({ instance, element })
+    if (this.dirtyList.current) {
+      this.dirtyList.current.push({ instance, element })
+    }
   }
 
   private runBatchUpdate() {

@@ -79,9 +79,7 @@ export default class DOMInstance implements Instance {
     }
     
     emitter.on('loaded', () => {
-      if (this.node) {
-        this.node.removeAttribute(DATA_ID)
-      }
+      if (this.node) this.node.removeAttribute(DATA_ID)
     })
 
     return markup

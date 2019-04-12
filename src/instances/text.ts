@@ -27,9 +27,7 @@ export default class TextInstance implements Instance {
       const wrapper = getNode(this.id)
       if (wrapper) {
         this.node = wrapper.firstChild as Text
-        if (!this.node) {
-          this.node = createNode('') as Text
-        }
+        if (!this.node) this.node = createNode('') as Text
         wrapper.parentNode.insertBefore(this.node, wrapper)
         wrapper.remove()
       }

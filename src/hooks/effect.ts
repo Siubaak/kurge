@@ -15,7 +15,7 @@ export default function useEffect(effect: Effect, guard: any[] = null) {
       const prevGuard = instance.prevGuard
 
       if (is.undefined(prevGuard)) {
-        throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement')
+        throw new Error('unmatch any effects, please don\'t call useEffect in if/loop statement')
       }
 
       let shouldCall = false
