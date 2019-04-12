@@ -4,106 +4,19 @@
   (global = global || self, global.Kurge = factory());
 }(this, function () { 'use strict';
 
-  var _toString = Object.prototype.toString;
-  var is = {
-      undefined: function (val) { return _toString.call(val) === '[object Undefined]'; },
-      null: function (val) { return _toString.call(val) === '[object Null]'; },
-      number: function (val) { return _toString.call(val) === '[object Number]'; },
-      string: function (val) { return _toString.call(val) === '[object String]'; },
-      boolean: function (val) { return _toString.call(val) === '[object Boolean]'; },
-      symbol: function (val) { return _toString.call(val) === '[object Symbol]'; },
-      regexp: function (val) { return _toString.call(val) === '[object RegExp]'; },
-      object: function (val) { return _toString.call(val) === '[object Object]'; },
-      array: function (val) { return _toString.call(val) === '[object Array]'; },
-      function: function (val) { return _toString.call(val) === '[object Function]'; }
-  };
-  var _hasOwn = Object.prototype.hasOwnProperty;
-  function hasOwn(object, property) {
-      return _hasOwn.call(object, property);
-  }
-  function delArrItem(arr, item) {
-      if (arr.length) {
-          var index = arr.indexOf(item);
-          if (index > -1) {
-              return arr.splice(index, 1);
-          }
-      }
-  }
-  function requestIdleCallbackPolyfill(callback) {
-      var start = Date.now();
-      return requestAnimationFrame(function () {
-          callback({
-              timeRemaining: function () { return Math.max(0, 50 - (Date.now() - start)); }
-          });
-      });
-  }
-  var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
-  function getProto(object) {
-      return Object.getPrototypeOf(object) || object.__proto__ || null;
-  }
-  function setProto(object, proto) {
-      if (Object.setPrototypeOf) {
-          Object.setPrototypeOf(object, proto);
-          return true;
-      }
-      else if (object.__proto__) {
-          object.__proto__ = proto;
-          return true;
-      }
-      else {
-          return false;
-      }
-  }
-
   var DATA_ID = 'data-kgid';
   var DEP_SYMBOL = Math.random().toString(36).substr(2);
   var RESERVED_PROPS = { key: true, ref: true };
   var eventHandlers = Object.keys(window || {}).filter(function (key) { return /^on/.test(key); });
   var SUPPORTED_LISTENERS = {};
   eventHandlers.forEach(function (listener) { return SUPPORTED_LISTENERS[listener] = true; });
-
-  function getNode(id) {
-      return document.querySelector("[" + DATA_ID + "=\"" + id + "\"]");
-  }
-  function createNode(markup) {
-      if (markup === '') {
-          return document.createTextNode('');
-      }
-      else {
-          var node = document.createElement('div');
-          node.innerHTML = markup;
-          return node.firstChild;
-      }
-  }
-  function getClassString(className) {
-      var markup = '';
-      if (className == null) ;
-      else if (typeof className === 'object') {
-          markup += Object.keys(className).filter(function (cls) { return className[cls]; }).join(' ');
-      }
-      else if (Array.isArray(className)) {
-          markup += className.join(' ');
-      }
-      else {
-          markup += className.toString();
-      }
-      return markup.trim();
-  }
-  function getStyleString(style) {
-      var markup = '';
-      if (style == null) ;
-      else if (typeof style === 'object') {
-          for (var key in style) {
-              if (Object.hasOwnProperty.call(style, key)) {
-                  markup += key.replace(/[A-Z]/g, function (letter) { return "-" + letter.toLowerCase(); }) + (": " + style[key] + "; ");
-              }
-          }
-      }
-      else {
-          markup += style.toString();
-      }
-      return markup.trim();
-  }
+  var PRIORITY;
+  (function (PRIORITY) {
+      PRIORITY[PRIORITY["EVENT"] = 0] = "EVENT";
+      PRIORITY[PRIORITY["ANIMATION"] = 1] = "ANIMATION";
+      PRIORITY[PRIORITY["TASK"] = 2] = "TASK";
+      PRIORITY[PRIORITY["NORMAL"] = 3] = "NORMAL";
+  })(PRIORITY || (PRIORITY = {}));
 
   var Emitter = (function () {
       function Emitter() {
@@ -129,57 +42,6 @@
       return Emitter;
   }());
   var emitter = new Emitter();
-
-  var TextInstance = (function () {
-      function TextInstance(element) {
-          this.node = null;
-          this.element = '' + element;
-      }
-      Object.defineProperty(TextInstance.prototype, "key", {
-          get: function () {
-              return this.index != null ? '' + this.index : null;
-          },
-          enumerable: true,
-          configurable: true
-      });
-      TextInstance.prototype.mount = function (id) {
-          var _this = this;
-          this.id = id;
-          emitter.on('loaded', function () {
-              var wrapper = getNode(_this.id);
-              if (wrapper) {
-                  _this.node = wrapper.firstChild;
-                  if (!_this.node) {
-                      _this.node = createNode('');
-                  }
-                  wrapper.parentNode.insertBefore(_this.node, wrapper);
-                  wrapper.remove();
-              }
-          });
-          return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
-      };
-      TextInstance.prototype.same = function (nextElement) {
-          return is.number(nextElement) || is.string(nextElement);
-      };
-      TextInstance.prototype.update = function (nextElement) {
-          if (!this.node)
-              return;
-          nextElement = nextElement == null ? this.element : '' + nextElement;
-          if (this.element !== nextElement) {
-              this.element = nextElement;
-              this.node.textContent = this.element;
-          }
-      };
-      TextInstance.prototype.unmount = function () {
-          if (this.node)
-              this.node.remove();
-          delete this.id;
-          delete this.node;
-          delete this.index;
-          delete this.element;
-      };
-      return TextInstance;
-  }());
 
   var wid = 0;
   var Watcher = (function () {
@@ -356,25 +218,42 @@
 
   var DirtyList = (function () {
       function DirtyList() {
-          this.map = {};
           this.arr = [];
       }
-      Object.defineProperty(DirtyList.prototype, "first", {
+      Object.defineProperty(DirtyList.prototype, "current", {
           get: function () {
-              return this.map[this.arr[0]];
+              return this.arr[0] && this.arr[0].current;
           },
           enumerable: true,
           configurable: true
       });
-      DirtyList.prototype.push = function (componentInst) {
+      DirtyList.prototype.insert = function (componentInst, priority) {
+          var find = false;
           var id = componentInst.id;
-          if (!this.map[id]) {
-              this.arr.push(id);
+          if (this.arr.length) {
+              for (var i = 0; i < this.arr.length; i++) {
+                  if (this.arr[i].id === id) {
+                      this.arr[i] = {
+                          id: id,
+                          priority: priority,
+                          current: [{ instance: componentInst, element: null }]
+                      };
+                      find = true;
+                      break;
+                  }
+              }
           }
-          this.map[id] = [{ instance: componentInst, element: null }];
+          if (!find) {
+              this.arr.push({
+                  id: id,
+                  priority: priority,
+                  current: [{ instance: componentInst, element: null }]
+              });
+          }
+          this.arr.sort(function (a, b) { return a.priority - b.priority; });
       };
       DirtyList.prototype.shift = function () {
-          delete this.map[this.arr.shift()];
+          return this.arr.shift();
       };
       return DirtyList;
   }());
@@ -382,23 +261,26 @@
       function Reconciler() {
           this.dirtyList = new DirtyList();
           this.isBatchUpdating = false;
+          this.priority = PRIORITY.NORMAL;
       }
       Reconciler.prototype.enqueueSetState = function (componentInst) {
-          this.dirtyList.push(componentInst);
+          this.dirtyList.insert(componentInst, this.priority);
           if (!this.isBatchUpdating) {
               this.runBatchUpdate();
           }
       };
       Reconciler.prototype.enqueueUpdate = function (instance, element) {
-          this.dirtyList.first.push({ instance: instance, element: element });
+          if (this.dirtyList.current) {
+              this.dirtyList.current.push({ instance: instance, element: element });
+          }
       };
       Reconciler.prototype.runBatchUpdate = function () {
           var _this = this;
           this.isBatchUpdating = true;
           var batchUpdate = function (deadline) {
               var _loop_1 = function () {
-                  if (_this.dirtyList.first.length) {
-                      var _a = _this.dirtyList.first.shift(), instance_1 = _a.instance, element = _a.element;
+                  if (_this.dirtyList.current.length) {
+                      var _a = _this.dirtyList.current.shift(), instance_1 = _a.instance, element = _a.element;
                       if (instance_1.id) {
                           instance_1.update(element);
                           if (instance_1 instanceof ComponentInstance) {
@@ -414,10 +296,10 @@
                       _this.dirtyList.shift();
                   }
               };
-              while (deadline.timeRemaining() > 0 && _this.dirtyList.first) {
+              while (deadline.timeRemaining() > 0 && _this.dirtyList.current) {
                   _loop_1();
               }
-              if (_this.dirtyList.first) {
+              if (_this.dirtyList.current) {
                   nextTick(batchUpdate);
               }
               else {
@@ -430,6 +312,197 @@
       return Reconciler;
   }());
   var reconciler = new Reconciler();
+  window._requestAnimationFrame = window.requestAnimationFrame;
+  window.requestAnimationFrame = function requestAnimationFrame(callback) {
+      return window._requestAnimationFrame(function () {
+          reconciler.priority = PRIORITY.ANIMATION;
+          callback.apply(this, arguments);
+          reconciler.priority = PRIORITY.NORMAL;
+      });
+  };
+  window._setTimeout = window.setTimeout;
+  window.setTimeout = function setTimeout(handler, timeout) {
+      var args = [];
+      for (var _i = 2; _i < arguments.length; _i++) {
+          args[_i - 2] = arguments[_i];
+      }
+      var _a;
+      if (is.string(handler)) {
+          handler = new Function(handler);
+      }
+      return (_a = window)._setTimeout.apply(_a, [function () {
+              reconciler.priority = PRIORITY.TASK;
+              handler.apply(this, arguments);
+              reconciler.priority = PRIORITY.NORMAL;
+          }, timeout].concat(args));
+  };
+  window._setInterval = window.setInterval;
+  window.setInterval = function setInterval(handler, timeout) {
+      var args = [];
+      for (var _i = 2; _i < arguments.length; _i++) {
+          args[_i - 2] = arguments[_i];
+      }
+      var _a;
+      if (is.string(handler)) {
+          handler = new Function(handler);
+      }
+      return (_a = window)._setInterval.apply(_a, [function () {
+              reconciler.priority = PRIORITY.TASK;
+              handler.apply(this, arguments);
+              reconciler.priority = PRIORITY.NORMAL;
+          }, timeout].concat(args));
+  };
+
+  var _toString = Object.prototype.toString;
+  var is = {
+      undefined: function (val) { return _toString.call(val) === '[object Undefined]'; },
+      null: function (val) { return _toString.call(val) === '[object Null]'; },
+      number: function (val) { return _toString.call(val) === '[object Number]'; },
+      string: function (val) { return _toString.call(val) === '[object String]'; },
+      boolean: function (val) { return _toString.call(val) === '[object Boolean]'; },
+      symbol: function (val) { return _toString.call(val) === '[object Symbol]'; },
+      regexp: function (val) { return _toString.call(val) === '[object RegExp]'; },
+      object: function (val) { return _toString.call(val) === '[object Object]'; },
+      array: function (val) { return _toString.call(val) === '[object Array]'; },
+      function: function (val) { return _toString.call(val) === '[object Function]'; }
+  };
+  var _hasOwn = Object.prototype.hasOwnProperty;
+  function hasOwn(object, property) {
+      return _hasOwn.call(object, property);
+  }
+  function delArrItem(arr, item) {
+      if (arr.length) {
+          var index = arr.indexOf(item);
+          if (index > -1) {
+              return arr.splice(index, 1);
+          }
+      }
+  }
+  function requestIdleCallbackPolyfill(callback) {
+      var start = Date.now();
+      return requestAnimationFrame(function () {
+          callback({
+              timeRemaining: function () { return Math.max(0, 50 - (Date.now() - start)); }
+          });
+      });
+  }
+  var nextTick = window.requestIdleCallback || requestIdleCallbackPolyfill;
+  function getProto(object) {
+      return Object.getPrototypeOf(object) || object.__proto__ || null;
+  }
+  function setProto(object, proto) {
+      if (Object.setPrototypeOf) {
+          Object.setPrototypeOf(object, proto);
+          return true;
+      }
+      else if (object.__proto__) {
+          object.__proto__ = proto;
+          return true;
+      }
+      else {
+          return false;
+      }
+  }
+  function eventHandlerWrapper(eventHandler) {
+      return function () {
+          reconciler.priority = PRIORITY.EVENT;
+          eventHandler.apply(this, arguments);
+          reconciler.priority = PRIORITY.TASK;
+      };
+  }
+
+  function getNode(id) {
+      return document.querySelector("[" + DATA_ID + "=\"" + id + "\"]");
+  }
+  function createNode(markup) {
+      if (markup === '') {
+          return document.createTextNode('');
+      }
+      else {
+          var node = document.createElement('div');
+          node.innerHTML = markup;
+          return node.firstChild;
+      }
+  }
+  function getClassString(className) {
+      var markup = '';
+      if (className == null) ;
+      else if (typeof className === 'object') {
+          markup += Object.keys(className).filter(function (cls) { return className[cls]; }).join(' ');
+      }
+      else if (Array.isArray(className)) {
+          markup += className.join(' ');
+      }
+      else {
+          markup += className.toString();
+      }
+      return markup.trim();
+  }
+  function getStyleString(style) {
+      var markup = '';
+      if (style == null) ;
+      else if (typeof style === 'object') {
+          for (var key in style) {
+              if (Object.hasOwnProperty.call(style, key)) {
+                  markup += key.replace(/[A-Z]/g, function (letter) { return "-" + letter.toLowerCase(); }) + (": " + style[key] + "; ");
+              }
+          }
+      }
+      else {
+          markup += style.toString();
+      }
+      return markup.trim();
+  }
+
+  var TextInstance = (function () {
+      function TextInstance(element) {
+          this.node = null;
+          this.element = '' + element;
+      }
+      Object.defineProperty(TextInstance.prototype, "key", {
+          get: function () {
+              return this.index != null ? '' + this.index : null;
+          },
+          enumerable: true,
+          configurable: true
+      });
+      TextInstance.prototype.mount = function (id) {
+          var _this = this;
+          this.id = id;
+          emitter.on('loaded', function () {
+              var wrapper = getNode(_this.id);
+              if (wrapper) {
+                  _this.node = wrapper.firstChild;
+                  if (!_this.node)
+                      _this.node = createNode('');
+                  wrapper.parentNode.insertBefore(_this.node, wrapper);
+                  wrapper.remove();
+              }
+          });
+          return "<span " + DATA_ID + "=\"" + id + "\" >" + this.element + "</span>";
+      };
+      TextInstance.prototype.same = function (nextElement) {
+          return is.number(nextElement) || is.string(nextElement);
+      };
+      TextInstance.prototype.update = function (nextElement) {
+          if (!this.node)
+              return;
+          nextElement = nextElement == null ? this.element : '' + nextElement;
+          if (this.element !== nextElement) {
+              this.element = nextElement;
+              this.node.textContent = this.element;
+          }
+      };
+      TextInstance.prototype.unmount = function () {
+          if (this.node)
+              this.node.remove();
+          delete this.id;
+          delete this.node;
+          delete this.index;
+          delete this.element;
+      };
+      return TextInstance;
+  }());
 
   function diff(prevInstances, nextChildren) {
       var prevInstanceMap = {};
@@ -453,7 +526,7 @@
       var backwardOps = [];
       var lastForwardIndex = -1;
       var lastBackwardIndex = prevInstances.length;
-      for (var index = 0; index < nextInstances.length; ++index) {
+      for (var index = 0; index < nextInstances.length; index++) {
           var forwardNextInstance = nextInstances[index];
           var forwardPrevInstance = prevInstanceMap[forwardNextInstance.key];
           if (forwardPrevInstance === forwardNextInstance) {
@@ -544,7 +617,7 @@
           }
           else {
               if (op.type === 'insert') {
-                  ++insertNum;
+                  insertNum++;
                   var markup = op.inst.mount(parentInst.id + ":" + op.inst.key);
                   var node = createNode(markup);
                   var beforeNode = container.children[beforeIndex];
@@ -595,7 +668,9 @@
                   markup += "style=\"" + getStyleString(props.style) + "\" ";
               }
               else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(props[prop])) {
-                  emitter.on('loaded', function () { return _this.node[prop.toLowerCase()] = props[prop]; });
+                  emitter.on('loaded', function () {
+                      _this.node[prop.toLowerCase()] = eventHandlerWrapper(props[prop]);
+                  });
               }
               else {
                   markup += prop + "=\"" + props[prop] + "\" ";
@@ -618,9 +693,8 @@
               emitter.on('loaded', function () { return compInst_1.refs[_this.element.ref] = _this.node; });
           }
           emitter.on('loaded', function () {
-              if (_this.node) {
+              if (_this.node)
                   _this.node.removeAttribute(DATA_ID);
-              }
           });
           return markup;
       };
@@ -661,7 +735,7 @@
               else if (SUPPORTED_LISTENERS[prop.toLowerCase()] && is.function(nextProps[prop])) {
                   var nextEventListener = nextProps[prop];
                   if (this.node[prop.toLowerCase()] !== nextEventListener) {
-                      this.node[prop.toLowerCase()] = nextEventListener;
+                      this.node[prop.toLowerCase()] = eventHandlerWrapper(nextEventListener);
                   }
               }
               else {
@@ -976,7 +1050,7 @@
           if (instance_1.node) {
               var prevGuard = instance_1.prevGuard;
               if (is.undefined(prevGuard)) {
-                  throw new Error('unmatch any effects. please don\'t call useEffect in if/loop statement');
+                  throw new Error('unmatch any effects, please don\'t call useEffect in if/loop statement');
               }
               var shouldCall = false;
               if (is.array(guard) && is.array(prevGuard) && guard.length === prevGuard.length) {
@@ -1013,7 +1087,7 @@
       }
   }
 
-  var version = "1.1.1";
+  var version = "1.1.2";
 
   var index = {
       version: version,
