@@ -30,7 +30,7 @@
   "homepage": "https://github.com/Siubaak/kurge#readme",
   "devDependencies": {
     "@types/jest": "^23.3.13",
-    "jest": "^23.6.0",
+    "jest": "^29.3.1",
     "rollup": "^1.1.0",
     "rollup-plugin-json": "^3.1.0",
     "rollup-plugin-typescript2": "^0.18.1",
